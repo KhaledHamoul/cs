@@ -1,0 +1,88 @@
+{% extends "layouts/base.html" %}
+
+
+{% block title %} Saved Dataset {% endblock %}
+
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+<div class="pcoded-content">
+    <div class="pcoded-inner-content">
+        <!-- [ breadcrumb ] start -->
+        <div class="page-header">
+            <div class="page-block">
+                <div class="row align-items-center">
+                    <div class="col-md-12">
+                        <div class="page-header-title">
+                            <h5 class="m-b-10"></h5>
+                        </div>
+                        <ul class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="/"><i class="feather icon-home"></i></a></li>
+                            <li class="breadcrumb-item"><a href="javascript:">Datasets</a></li>
+                            <li class="breadcrumb-item"><a href="javascript:">Saved datasets</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="main-body">
+            <div class="page-wrapper">
+                <div class="row">
+                    <div class="col-xl-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>Datasets {{mytext}}</h5>
+                            </div>
+                            <div class="card-block table-border-style">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Label</th>
+                                                <th>Description</th>
+                                                <th>total records</th>
+                                                <th>Parent</th>
+                                                <th></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for dataset in datasets %}
+                                            <tr>
+                                                <th scope="row">{{ dataset.id }}</th>
+                                                <td>{{ dataset.title }}</td>
+                                                <th>{{ dataset.description }}</td>
+                                                <td>{{ dataset.records_count }}</td>
+                                                <td>#{{ dataset.parent.id  }} {{ dataset.parent.title }}</td>
+                                                <td>
+                                                    <a href="/data/view/{{ dataset.id }}" class="btn-secondary btn-sm"><i class="fas fa-table"></i></a>
+                                                    <a href="/data/update/{{ dataset.id }}" class="btn-primary btn-sm"><i class="fas fa-edit"></i></a>
+                                                    <a href="/data/delete/{{ dataset.id }}" class="btn-danger btn-sm"><i class="far fa-trash-alt"></i></a>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+<script>
+    $(function () {
+        $('.table').DataTable()
+    });
+</script>
+
+{% endblock javascripts %}
