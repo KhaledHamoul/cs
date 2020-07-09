@@ -14,9 +14,7 @@
             <div class="page-block">
                 <div class="row align-items-center">
                     <div class="col-md-12">
-                        <div class="page-header-title">
-                            <h5 class="m-b-10">Load dataset</h5>
-                        </div>
+                        <div class="page-header-title"></div>
                         <ul class="breadcrumb">
                             <li class="breadcrumb-item"><a href="/"><i class="feather icon-home"></i></a></li>
                             <li class="breadcrumb-item"><a href="javascript:">Datasets</a></li>
@@ -36,30 +34,15 @@
                             <div class="card-header">
                                 <h5>Load dataset</h5>
                                 <div class="float-right">
-                                    <input type="file" name="dataset" style="display: none">
+                                    <input type="file" name="dataset" accept=".csv" style="display: none">
                                     <i class="feather icon-file" id="choose-file-icon"></i>
                                     <button class="btn btn-success mb-3" id="load-dataset-btn" disabled>Load dataset <i class="fas fa-spinner fa-pulse" style="display: none" id="file-upload-spinner"></i></button>
                                     <div id="file-name"></div>
                                 </div>
                             </div>
-                            <div class="card-block table-border-style">
-                                <div class="table-responsive">
-                                    <table class="table table-hover">
-                                        <thead>
-                                            <tr>
-                                                <th>#</th>
-                                                <th>attr 1</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <th scope="row">#</th>
-                                                <td>value</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
+                            {% comment %} <div class="card-block table-border-style">
+                                
+                            </div> {% endcomment %}
                         </div>
                     </div>
                 </div>

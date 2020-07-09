@@ -1,7 +1,8 @@
 {% extends "layouts/base.html" %}
+{% load template_filters %}
 
 
-{% block title %} Saved Dataset {% endblock %}
+{% block title %} Update Dataset {% endblock %}
 
 <!-- Specific CSS goes HERE -->
 {% block stylesheets %}{% endblock stylesheets %}
@@ -21,7 +22,7 @@
                         <ul class="breadcrumb">
                             <li class="breadcrumb-item"><a href="/"><i class="feather icon-home"></i></a></li>
                             <li class="breadcrumb-item"><a href="javascript:">Datasets</a></li>
-                            <li class="breadcrumb-item"><a href="javascript:">Saved datasets</a></li>
+                            <li class="breadcrumb-item"><a href="javascript:">Update dataset</a></li>
                         </ul>
                     </div>
                 </div>
@@ -33,34 +34,41 @@
                     <div class="col-xl-12">
                         <div class="card">
                             <div class="card-header">
-                                <h5>Datasets</h5>
+                                <h5>Dataset</h5>
+                                <button class="btn btn-success mb-3 float-right" id="update-dataset-btn">Update</button>
                             </div>
                             <div class="card-block table-border-style">
+                                <h5>Dataset information</h5>
+                                <div class="row mb-5">
+                                    <div class="col-sm-col-6 pl-3">
+                                        <div class="form-group">
+                                            <label for="dataset-title" class="label">Title</label>
+                                            <input id="dataset-description" type="text" class="form-control" value="{{ dataset.title }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-10">
+                                        <div class="form-group">
+                                                <label for="dataset-description" class="label">Description</label>
+                                                <textarea id="dataset-description" class="form-control" rows="3">{{ dataset.description }}</textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                                <h5>Attributes information</h5>
                                 <div class="table-responsive">
                                     <table class="table table-hover">
                                         <thead>
                                             <tr>
-                                                <th>#</th>
-                                                <th>Label</th>
-                                                <th>Description</th>
-                                                <th>total records</th>
-                                                <th>Parent</th>
-                                                <th></th>
+                                                {% for f in fields %}
+                                                <th>{{ f }}</th>
+                                                {% endfor %}
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {% for dataset in datasets %}
+                                            {% for attribute in dataset.attributes.all %}
                                             <tr>
-                                                <th scope="row">{{ dataset.id }}</th>
-                                                <td>{{ dataset.title }}</td>
-                                                <th>{{ dataset.description }}</td>
-                                                <td>{{ dataset.records_count }}</td>
-                                                <td>#{{ dataset.parent.id  }} {{ dataset.parent.title }}</td>
-                                                <td>
-                                                    <a href="/data/view/{{ dataset.id }}" class="btn-success btn-sm"><i class="fas fa-eye"></i></a>
-                                                    <a href="/data/update/{{ dataset.id }}" class="btn-primary btn-sm"><i class="fas fa-edit"></i></a>
-                                                    <a href="#" data-dataset-id="{{dataset.id}}" class="btn-danger btn-sm data-remove-btn"><i class="far fa-trash-alt"></i></a>
-                                                </td>
+                                                {% for f in fields %}
+                                                <td><input type="text" class="form-control" name="{{ f }}[{{ attribute.id }}]" value="{{ attribute|get_item:f }}"></td>
+                                                {% endfor %}
                                             </tr>
                                             {% endfor %}
                                         </tbody>
@@ -81,7 +89,6 @@
 {% block javascripts %}
 <script>
     $(function () {
-        $('.table').DataTable()
     });
 </script>
 

@@ -1,0 +1,117 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Optimum Clusters Number {% endblock %}
+
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+<div class="pcoded-content">
+    <div class="pcoded-inner-content">
+        <!-- [ breadcrumb ] start -->
+        <div class="page-header">
+            <div class="page-block">
+                <div class="row align-items-center">
+                    <div class="col-md-12">
+                        <div class="page-header-title">
+                            <h5 class="m-b-10"></h5>
+                        </div>
+                        <ul class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="/"><i class="feather icon-home"></i></a></li>
+                            <li class="breadcrumb-item"><a href="javascript:">Analysis</a></li>
+                            <li class="breadcrumb-item"><a href="javascript:">Optimum Clusters Number</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- [ breadcrumb ] end -->
+        <div class="main-body">
+            <div class="page-wrapper">
+                <!-- [ Main Content ] start -->
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>Optimum Clusters Number</h5>
+                            </div>
+                            <div class="card-block">
+                                <div class="row">
+                                    <div class="col-sm-4">
+                                        <div class="form-group">
+                                            <label for="exampleFormControlSelect1">Select dataset</label>
+                                            <select name="dataset" class="form-control">
+                                                <option selected disabled></option>
+                                                {% for dataset in datasets %}
+                                                    <option value="{{dataset.id}}">{{ dataset.title }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-4">
+                                        <div class="form-group">
+                                            <label for="method">Select mothod</label>
+                                            <select name="method" class="form-control">
+                                                <option selected disabled></option>
+                                                {% for algorithm in algorithms %}
+                                                    <option value="{{algorithm.mathod}}">{{ algorithm.label }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                     <div class="col-sm-4">
+                                        <div class="form-group">
+                                            <label for="maxIterationsNumeber">Max number of iterations</label>
+                                            <input type="number" name="maxIterationsNumeber" class="form-control" min="2" max="100">
+                                        </div>
+                                    </div>
+                                    <div class="ml-auto col-sm-6">
+                                        <button class="btn btn-success float-right submit-btn">Submit</button>
+                                    </div>
+                                    <div class="ml-auto col-sm-12">
+                                       <div id="imagediv"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- [ Main Content ] end -->
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+<script>
+    $('.submit-btn').on('click', function() {
+        const submitBtn = $(this)
+        if ($('select[name=dataset]').val() && $('select[name=method]').val()) {
+            // submitBtn.attr('disabled', 'disabled')
+            $.ajax({
+                url: '/api/analysis/optimum_clusters_number',
+                method: 'POST',
+                data: {
+                    method: $('select[name=method]').val(),
+                    datasetId: $('select[name=dataset]').val(),
+                    maxIterationsNumeber: $('input[name=maxIterationsNumeber]').val()
+                },
+                dataType: 'json',
+                success: function(data) {
+                    console.log(data)
+                    $('#imagediv').html(data.plot)
+                },
+                error: function(err) {
+                    console.log(err)
+                }
+            })
+        }
+        else alert('Please make all the choices first')
+    })
+</script>
+
+{% endblock javascripts %}
