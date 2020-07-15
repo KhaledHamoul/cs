@@ -1,14 +1,17 @@
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import csv
+import json
 from app.models import Dataset, Record, Attribute
 from sklearn.cluster import KMeans
 from sklearn import metrics
 from scipy.spatial.distance import cdist
 import numpy as np
 import matplotlib.pyplot as plt
-from api.helpers import getPltImage
+from api.helpers import buildDatasetMatrix
 from api.optimumClustersNumber import switcher
+from api.pre_processing import pre_processing
+import pandas as pd
 
 # upload & validate dataset
 
@@ -16,6 +19,15 @@ from api.optimumClustersNumber import switcher
 @csrf_exempt
 def upload_dataset(request):
     csvfile = request.FILES['dataset']
+
+    # TODO return validation errors from the pre_proccesing class if any
+    # link : https://www.kaggle.com/smohubal/market-customer-segmentation-clustering/notebook
+    # csvfile = pd.read_csv(csvfile)
+    # datasetInstance = pre_processing(csvfile)
+    # result = datasetInstance.missing_percent_plot()
+    # print(result)
+    # return JsonResponse({'result': result})
+
     decoded_file = csvfile.read().decode('utf-8').splitlines()
     reader = csv.reader(decoded_file, delimiter=',')
 
@@ -51,15 +63,16 @@ def upload_dataset(request):
 @csrf_exempt
 def optimum_clusters_number(request):
     datasetId = request.POST.get('datasetId')
-    dataset = Dataset.objects.get(id=datasetId)
-    
     method = request.POST.get('method')
     maxIterationsNumeber = request.POST.get('maxIterationsNumeber')
 
-    result = switcher(method=method, args={'maxIterationsNumeber': maxIterationsNumeber})
+    dataset = Dataset.objects.get(id=datasetId)
+    datasetMatrix = buildDatasetMatrix(dataset=dataset)
 
-    return JsonResponse({'plot': getPltImage(plt), 'result': result})
-    # return JsonResponse({'status': dataset.toJSON()})
+    result = switcher(method=method, args={
+                      'datasetMatrix': datasetMatrix, 'maxIterationsNumeber': maxIterationsNumeber})
+
+    return JsonResponse(result)
 
 
 def calculate_WSS(points, kmax):

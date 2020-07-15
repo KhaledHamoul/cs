@@ -107,6 +107,10 @@ def optimum_clusters_number(request):
         {
             "label": 'Silhouette',
             "mathod": 'silhouette'
+        },
+        {
+            "label": 'Gap Statistic',
+            "mathod": 'gap_statistic'
         }
     ]
     return render(request, "analysis/optimum_clusters_number.html", {'datasets': datasets, 'algorithms': algorithms})
