@@ -6,3 +6,7 @@
 #file-name {
     font-size: 10px;
 }
+
+#results-container img {
+    width: 100%;
+}

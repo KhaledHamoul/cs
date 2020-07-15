@@ -44,7 +44,7 @@
                                             <select name="dataset" class="form-control">
                                                 <option selected disabled></option>
                                                 {% for dataset in datasets %}
-                                                    <option value="{{dataset.id}}">{{ dataset.title }}</option>
+                                                <option value="{{dataset.id}}">{{ dataset.title }}</option>
                                                 {% endfor %}
                                             </select>
                                         </div>
@@ -55,22 +55,38 @@
                                             <select name="method" class="form-control">
                                                 <option selected disabled></option>
                                                 {% for algorithm in algorithms %}
-                                                    <option value="{{algorithm.mathod}}">{{ algorithm.label }}</option>
+                                                <option value="{{algorithm.mathod}}">{{ algorithm.label }}</option>
                                                 {% endfor %}
                                             </select>
                                         </div>
                                     </div>
-                                     <div class="col-sm-4">
+                                    <div class="col-sm-4">
                                         <div class="form-group">
                                             <label for="maxIterationsNumeber">Max number of iterations</label>
-                                            <input type="number" name="maxIterationsNumeber" class="form-control" min="2" max="100">
+                                            <input type="number" name="maxIterationsNumeber" class="form-control"
+                                                min="2" max="100">
                                         </div>
                                     </div>
                                     <div class="ml-auto col-sm-6">
-                                        <button class="btn btn-success float-right submit-btn">Submit</button>
+                                        <button class="btn btn-success float-right submit-btn">Run</button>
                                     </div>
-                                    <div class="ml-auto col-sm-12">
-                                       <div id="imagediv"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>Result</h5>
+                                <div class="btn-group btn-group-toggle float-right" data-toggle="buttons">
+                                    <button type="button"  class="btn btn-secondary btn-lg active">Matplotlib</button>
+                                    <button type="button"  class="btn btn-secondary btn-sm">D3</button>
+                                </div>
+                            </div>
+                            <div class="card-block">
+                                <div class="row">
+                                    <div class="ml-auto col-sm-12 text-center">
+                                        <div id="results-container"></div>
                                     </div>
                                 </div>
                             </div>
@@ -88,10 +104,12 @@
 <!-- Specific Page JS goes HERE  -->
 {% block javascripts %}
 <script>
-    $('.submit-btn').on('click', function() {
+    $('.submit-btn').on('click', function () {
         const submitBtn = $(this)
         if ($('select[name=dataset]').val() && $('select[name=method]').val()) {
-            // submitBtn.attr('disabled', 'disabled')
+            submitBtn.attr('disabled', 'disabled')
+            $('#results-container').html('<i class="fas fa-spinner fa-pulse"></i>')
+
             $.ajax({
                 url: '/api/analysis/optimum_clusters_number',
                 method: 'POST',
@@ -101,16 +119,18 @@
                     maxIterationsNumeber: $('input[name=maxIterationsNumeber]').val()
                 },
                 dataType: 'json',
-                success: function(data) {
-                    console.log(data)
-                    $('#imagediv').html(data.plot)
+                timeout: 0,
+                success: function (data) {
+                    submitBtn.removeAttr('disabled')
+                    $('#results-container').html(data.visual)
                 },
-                error: function(err) {
+                error: function (err) {
+                    submitBtn.removeAttr('disabled')
+                    alert('An unexpected error occured')
                     console.log(err)
                 }
             })
-        }
-        else alert('Please make all the choices first')
+        } else alert('Please select options first')
     })
 </script>
 
