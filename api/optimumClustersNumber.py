@@ -8,26 +8,9 @@ from scipy.spatial.distance import cdist
 import numpy as np
 import pandas as pd
 import matplotlib.cm as cm
-from api.helpers import getPltImage
 from sklearn.metrics import silhouette_samples, silhouette_score
 import matplotlib
 matplotlib.use('Agg')
-
-
-# method switcher
-def switcher(method, args):
-    if method == 'elbow':
-        return elbow(args)
-
-    if method == 'silhouette':
-        return silhouette(args)
-
-    if method == 'gap_statistic':
-        return gapStatistic(args)
-
-    else:
-        return "Invalid method"
-
 
 # Methods
 def elbow(args):
@@ -57,6 +40,9 @@ def elbow(args):
     plt.xlabel('Values of K')
     plt.ylabel('Distortion')
     plt.title('The Elbow Method using Distortion')
+
+    # avoid circular imports (error)
+    from api.helpers import getPltImage  
 
     visual = '<div class="col-sm-6">' + getPltImage(plt) + '</div>'
 
@@ -170,6 +156,9 @@ def silhouette(args):
                       "with n_clusters = %d" % n_clusters),
                      fontsize=14, fontweight='bold')
 
+    # avoid circular imports (error)
+    from api.helpers import getPltImage  
+    
     ax3.set_title("The Silhouette Method avgs")
     ax3.set_xlabel("The silhouette coefficient values")
     ax3.set_ylabel("Cluster label")
@@ -224,6 +213,9 @@ def gapStatistic(args):
     plt.xlabel('Cluster Count')
     plt.ylabel('Gap Value')
     plt.title('Gap Values by Cluster Count')
+
+    # avoid circular imports (error)
+    from api.helpers import getPltImage  
 
     visual = '<div class="col-sm-12">' + getPltImage(plt) + '</div>'
 

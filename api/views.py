@@ -3,13 +3,13 @@ from django.views.decorators.csrf import csrf_exempt
 import csv
 import json
 from app.models import Dataset, Record, Attribute
+from api.models import Result
 from sklearn.cluster import KMeans
 from sklearn import metrics
 from scipy.spatial.distance import cdist
 import numpy as np
 import matplotlib.pyplot as plt
-from api.helpers import buildDatasetMatrix
-from api.optimumClustersNumber import switcher
+from api.helpers import switcher, buildDatasetMatrix, buildDataFrame
 from api.pre_processing import pre_processing
 import pandas as pd
 
@@ -20,13 +20,14 @@ import pandas as pd
 def upload_dataset(request):
     csvfile = request.FILES['dataset']
 
-    # TODO return validation errors from the pre_proccesing class if any
     # link : https://www.kaggle.com/smohubal/market-customer-segmentation-clustering/notebook
-    # csvfile = pd.read_csv(csvfile)
-    # datasetInstance = pre_processing(csvfile)
-    # result = datasetInstance.missing_percent_plot()
-    # print(result)
-    # return JsonResponse({'result': result})
+    try:
+        tmpCsvfile = pd.read_csv(csvfile)
+        datasetInstance = pre_processing(tmpCsvfile)
+        visual, data = datasetInstance.missing_percent()
+        return JsonResponse({'data': data, 'visual': visual}, status=400)
+    except Exception:
+        csvfile.seek(0)
 
     decoded_file = csvfile.read().decode('utf-8').splitlines()
     reader = csv.reader(decoded_file, delimiter=',')
@@ -74,26 +75,49 @@ def optimum_clusters_number(request):
 
     return JsonResponse(result)
 
+# optimum_clusters_number
 
-def calculate_WSS(points, kmax):
-    distortions = []
-    K = range(1, 10)
-    for k in K:
-        kmeanModel = KMeans(n_clusters=k)
-        kmeanModel.fit(df)
-        distortions.append(kmeanModel.inertia_)
-    sse = []
-    for k in range(1, kmax+1):
-        kmeans = KMeans(n_clusters=k).fit(points)
-        centroids = kmeans.cluster_centers_
-        pred_clusters = kmeans.predict(points)
-        curr_sse = 0
 
-        # calculate square of Euclidean distance of each point from its cluster center and add to current WSS
-        for i in range(len(points)):
-            curr_center = centroids[pred_clusters[i]]
-            curr_sse += (points[i, 0] - curr_center[0]) ** 2 + \
-                (points[i, 1] - curr_center[1]) ** 2
+@csrf_exempt
+def clustering(request):
+    datasetId = request.POST.get('datasetId')
+    method = request.POST.get('method')
+    clustersNumber = request.POST.get('clustersNumber')
+    plotingColumns = request.POST.get('plotingColumns')
+    linkageMethod = request.POST.get('linkageMethod')
 
-        sse.append(curr_sse)
-    return sse
+    dataset = Dataset.objects.get(id=datasetId)
+    datasetMatrix = buildDatasetMatrix(dataset=dataset)
+    datasetDf = buildDataFrame(dataset=dataset)
+
+    args = {
+        'datasetMatrix': datasetMatrix,
+        'datasetDf': datasetDf,
+        'clustersNumber': clustersNumber,
+        'plotingColumns': plotingColumns,
+        'linkageMethod': linkageMethod
+    }
+
+    result = switcher(method=method, args=args)
+
+    # used for saving later on
+    result['method'] = method
+    result['datasetId'] = datasetId
+
+    return JsonResponse(result)
+
+
+@csrf_exempt
+def save_result(request):
+    datasetId = int(request.POST.get('datasetId'))
+    method = request.POST.get('method')
+    visual = request.POST.get('visual')
+    data = request.POST.get('data[labeledDataset]')
+
+    try:
+        result = Result(data=data, visual=visual, dataset_id=datasetId, method=method)
+        result.save()
+        return JsonResponse({'message': 'Saved successfuly'})
+    except Exception as e:
+        return JsonResponse({'message': str(e)}, status=400)
+

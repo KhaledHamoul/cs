@@ -1,0 +1,124 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Launch Analysis {% endblock %}
+
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}
+<style>
+
+#result-visual {
+    opacity: 0; height: 500px
+}
+
+.viewer-container.viewer-backdrop {
+    height: 500px !important;
+}
+
+.viewer-container.viewer-backdrop.viewer-fixed {
+    height: auto !important;
+}
+
+</style> 
+{% endblock stylesheets %}
+
+{% block content %}
+
+<div class="pcoded-content">
+    <div class="pcoded-inner-content">
+        <!-- [ breadcrumb ] start -->
+        <div class="page-header">
+            <div class="page-block">
+                <div class="row align-items-center">
+                    <div class="col-md-12">
+                        <div class="page-header-title">
+                            <h5 class="m-b-10">Result</h5>
+                        </div>
+                        <ul class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="/"><i class="feather icon-home"></i></a></li>
+                            <li class="breadcrumb-item"><a href="javascript:">Analysis</a></li>
+                            <li class="breadcrumb-item"><a href="javascript:">Result</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- [ breadcrumb ] end -->
+        <div class="main-body">
+            <div class="page-wrapper">
+                <!-- [ Main Content ] start -->
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>Clustering</h5>
+                            </div>
+                            <div class="card-block">
+                                <div class="row">
+                                    <div class="col-sm-12">
+                                        <div class="alert alert-info"><i class="fas fa-question-circle"></i> &nbsp;
+                                            <span id="algo-info"></span></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>Result</h5>
+                                <div class="btn-group btn-group-toggle float-right" data-toggle="buttons">
+                                    <button type="button" class="btn btn-secondary btn-lg active">Matplotlib</button>
+                                    <button type="button" class="btn btn-secondary btn-sm">D3</button>
+                                </div>
+                            </div>
+                            <div class="card-block">
+                                <div class="row">
+                                    <div class="ml-auto col-sm-12 text-center">
+                                        <div id="results-container">{{ result.visual | safe }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- [ Main Content ] end -->
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+<script>
+    setImageViewer()
+
+    // TOOD : copy it to a general place 
+    function setImageViewer() {
+        const viewer = new Viewer($('#results-container img')[0], {
+            inline: true,
+            viewed() {
+                viewer.zoomTo(0.2);
+            },
+            toolbar: {
+                zoomIn: 4,
+                zoomOut: 4,
+                oneToOne: 4,
+                reset: false,
+                prev: false,
+                play: {
+                    show: 4,
+                    size: 'large',
+                },
+                next: false,
+                rotateLeft: 4,
+                rotateRight: 4,
+                flipHorizontal: false,
+                flipVertical: false,
+            },
+        });
+    }
+</script>
+
+{% endblock javascripts %}

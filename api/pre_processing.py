@@ -8,12 +8,13 @@ from sklearn.cluster import KMeans
 from tqdm import tqdm
 import warnings
 
+
 class pre_processing:
 
     def __init__(self, data):
         self.data = data
 
-    def missing_percent_plot(self):
+    def missing_percent(self):
         missing_col = list(self.data.isna().sum() != 0)
 
         try:
@@ -28,13 +29,19 @@ class pre_processing:
             df['Total'] = self.data.isna().sum()
             df['perc_missing'] = missing_percent
             p = sns.barplot(x=df.perc_missing.index, y='perc_missing', data=df)
-            plt.xticks(rotation=90)
-            plt.xticks(rotation=45)
+            plt.xticks(rotation=0)
             p.tick_params(labelsize=14)
+
+            # avoid circular imports (error)
+            from api.helpers import getPltImage
+
+            visual = '<div class="col-sm-12">' + getPltImage(plt) + '</div>'
+            visual = '<div class="row">' + visual + '</div>'
         except:
             return'There is no missing values.'
-        return df.sort_values(ascending=False, by='Total', axis=0).to_json()
+        return visual, df.sort_values(ascending=False, by='Total', axis=0).to_json()
 
+    # link : https://www.kaggle.com/smohubal/market-customer-segmentation-clustering/notebook
     def reduce_mem_usage(self, verbose=True):
 
         numerics = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']

@@ -1,0 +1,251 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Launch Analysis {% endblock %}
+
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}
+<style>
+
+#result-visual {
+    opacity: 0; height: 500px
+}
+
+.viewer-container.viewer-backdrop {
+    height: 500px !important;
+}
+
+.viewer-container.viewer-backdrop.viewer-fixed {
+    height: auto !important;
+}
+
+</style> 
+{% endblock stylesheets %}
+
+{% block content %}
+
+<div class="pcoded-content">
+    <div class="pcoded-inner-content">
+        <!-- [ breadcrumb ] start -->
+        <div class="page-header">
+            <div class="page-block">
+                <div class="row align-items-center">
+                    <div class="col-md-12">
+                        <div class="page-header-title">
+                            <h5 class="m-b-10">Launch Analysis Algorithm</h5>
+                        </div>
+                        <ul class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="/"><i class="feather icon-home"></i></a></li>
+                            <li class="breadcrumb-item"><a href="javascript:">Analysis</a></li>
+                            <li class="breadcrumb-item"><a href="javascript:">Launch Analysis</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- [ breadcrumb ] end -->
+        <div class="main-body">
+            <div class="page-wrapper">
+                <!-- [ Main Content ] start -->
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>Clustering</h5>
+                            </div>
+                            <div class="card-block">
+                                <div class="row">
+                                    <div class="col-sm-12">
+                                        <div class="alert alert-info"><i class="fas fa-question-circle"></i> &nbsp;
+                                            <span id="algo-info"></span></div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-2">
+                                        <div class="form-group">
+                                            <label for="exampleFormControlSelect1">Dataset</label>
+                                            <select name="dataset" class="form-control">
+                                                {% comment %} <option selected disabled></option> {% endcomment %}
+                                                {% for dataset in datasets %}
+                                                <option value="{{ dataset.id }}">{{ dataset.title }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-2">
+                                        <div class="form-group">
+                                            <label for="method">Clustering Mothod</label>
+                                            <select name="method" class="form-control">
+                                                {% comment %} <option selected disabled></option> {% endcomment %}
+                                                {% for algorithm in algorithms %}
+                                                <option value="{{algorithm.method}}" data-info="{{ algorithm.info }}">
+                                                    {{ algorithm.label }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-2">
+                                        <div class="form-group">
+                                            <label for="clustersNumber">Number of Clusters</label>
+                                            <input type="number" name="clustersNumber" class="form-control" min="2"
+                                                max="100" value="3">
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-2">
+                                        <div class="form-group">
+                                            <label for="clustersNumber">Ploting Columns</label>
+                                            <input type="number" name="plotingColumns" class="form-control" min="1"
+                                                max="6" value="3">
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-2">
+                                        <div class="form-group">
+                                            <label for="clustersNumber">Linkage Method <a
+                                                    href="https://scikit-learn.org/stable/auto_examples/cluster/plot_linkage_comparison.html#"
+                                                    target="_blank"><i class="fas fa-question-circle"></i></a></label>
+                                            <select name="linkageMethod" class="form-control" disabled>
+                                                {% comment %} <option selected disabled></option> {% endcomment %}
+                                                {% for linkageMethod in linkageMethods %}
+                                                <option value="{{ linkageMethod.method }}">{{ linkageMethod.label }}
+                                                </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-8"></div>
+                                    <div class="ml-auto col-sm-6">
+                                        <button class="btn btn-success float-right run-btn">Run</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>Result</h5>
+                                <div class="btn-group float-right ml-2">
+                                    <button class="btn btn-primary save-btn" disabled><i
+                                            class="far fa-save mx-0"></i></button>
+                                </div>
+                                <div class="btn-group btn-group-toggle float-right" data-toggle="buttons">
+                                    <button type="button" class="btn btn-secondary btn-lg active">Matplotlib</button>
+                                    <button type="button" class="btn btn-secondary btn-sm">D3</button>
+                                </div>
+                            </div>
+                            <div class="card-block">
+                                <div class="row">
+                                    <div class="ml-auto col-sm-12 text-center">
+                                        <div id="results-container"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- [ Main Content ] end -->
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+<script>
+    $('.run-btn').on('click', function () {
+        const submitBtn = $(this)
+        if ($('select[name=dataset]').val() && $('select[name=method]').val()) {
+            submitBtn.attr('disabled', 'disabled')
+            $('#results-container').html('<i class="fas fa-spinner fa-pulse"></i>')
+
+            $.ajax({
+                url: '/api/analysis/clustering',
+                method: 'POST',
+                data: {
+                    method: $('select[name=method]').val(),
+                    datasetId: $('select[name=dataset]').val(),
+                    clustersNumber: $('input[name=clustersNumber]').val(),
+                    plotingColumns: $('input[name=plotingColumns]').val(),
+                    linkageMethod: $('select[name=linkageMethod]').val()
+                },
+                dataType: 'json',
+                timeout: 0,
+                success: function (data) {
+                    submitBtn.removeAttr('disabled')
+                    $('.save-btn').removeAttr('disabled')
+                    $('#results-container').html(data.visual)
+                    window.result = data
+
+                    setImageViewer()
+                },
+                error: function (err) {
+                    submitBtn.removeAttr('disabled')
+                    alert('An unexpected error occured')
+                    console.log(err)
+                }
+            })
+        } else alert('Please select options first')
+    })
+
+    // Save resutl
+    $('.save-btn').on('click', function () {
+        const submitBtn = $(this)
+        submitBtn.attr('disabled', 'disabled')
+
+        $.ajax({
+            url: '/api/analysis/save-result',
+            method: 'POST',
+            data: window.result,
+            dataType: 'json',
+            timeout: 0,
+            success: function (data) {
+                submitBtn.removeAttr('disabled')
+                toastr.success('Result saved successfuly', {
+                    timeOut: 3000
+                })
+            },
+            error: function (err) {
+                submitBtn.removeAttr('disabled')
+                toastr.error(err.responseJSON.message, 'unexpected error')
+
+            }
+        })
+    })
+
+    $('[name=method]').on('change', function () {
+        const op = $(this).children("option:selected")
+        $('#algo-info').html(op.data('info'))
+
+        if (op.val() != 'hierarchical') $('[name=linkageMethod]').attr('disabled', 'disabled')
+        else $('[name=linkageMethod]').removeAttr('disabled')
+    })
+
+    // private 
+    function setImageViewer() {
+        const viewer = new Viewer($('#results-container img')[0], {
+            inline: true,
+            viewed() {
+                viewer.zoomTo(0.2);
+            },
+            toolbar: {
+                zoomIn: 4,
+                zoomOut: 4,
+                oneToOne: 4,
+                reset: false,
+                prev: false,
+                play: {
+                    show: 4,
+                    size: 'large',
+                },
+                next: false,
+                rotateLeft: 4,
+                rotateRight: 4,
+                flipHorizontal: false,
+                flipVertical: false,
+            },
+        });
+    }
+</script>
+
+{% endblock javascripts %}

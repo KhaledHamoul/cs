@@ -7,6 +7,7 @@ from django.template.response import TemplateResponse
 from pprint import pprint
 from logging import warning
 from app.models import Dataset
+from api.models import Result
 from django.db.models import Count
 import json
 
@@ -92,8 +93,6 @@ def data_delete(request, id):
 
     return redirect('data_index')
 
-# delete
-
 
 @login_required(login_url="/login/")
 def optimum_clusters_number(request):
@@ -102,15 +101,87 @@ def optimum_clusters_number(request):
     algorithms = [
         {
             "label": 'Elbow',
-            "mathod": 'elbow'
+            "method": 'elbow'
         },
         {
             "label": 'Silhouette',
-            "mathod": 'silhouette'
+            "method": 'silhouette'
         },
         {
             "label": 'Gap Statistic',
-            "mathod": 'gap_statistic'
+            "method": 'gap_statistic'
         }
     ]
     return render(request, "analysis/optimum_clusters_number.html", {'datasets': datasets, 'algorithms': algorithms})
+
+
+@login_required(login_url="/login/")
+def clustering(request):
+    datasets = Dataset.objects.annotate(
+        records_count=Count("records")).filter(deleted=False)
+    algorithms = [
+        {
+            "label": 'K-Means',
+            "method": 'kmeans',
+            "info" : "k-means lorem ipsum"
+        },
+        {
+            "label": 'Hierarchical',
+            "method": 'hierarchical',
+            "info" : "Hirarchical lorem ipsum"
+        },
+        {
+            "label": 'Spectral',
+            "method": 'spectral',
+            "info" : "Spectral lorem ipsum"
+        }
+    ]
+
+    linkageMethods = [
+        {
+            "label": 'Ward',
+            "method": 'ward'
+        },
+        {
+            "label": 'Single',
+            "method": 'single'
+        },
+        {
+            "label": 'Complete',
+            "method": 'complete'
+        },
+        {
+            "label": 'Average',
+            "method": 'average'
+        }
+    ]
+
+    return render(request, "analysis/clustering.html", {'datasets': datasets, 'algorithms': algorithms, "linkageMethods": linkageMethods })
+
+@login_required(login_url="/login/")
+def results_index(request):
+    results = Result.objects.all()
+    return render(request, "analysis/results/index.html", {'results': results})
+
+
+# view
+@login_required(login_url="/login/")
+def results_view(request, id):
+    try:
+        result = Result.objects.get(id=id)
+        return render(request, "analysis/results/view.html", {'result': result})
+    except Result.DoesNotExist:
+        print('Result #{id} does not exist !')
+        return redirect('results_index')
+
+# delete
+@login_required(login_url="/login/")
+def results_delete(request, id):
+    try:
+        result = Result.objects.get(id=id)
+        result.delete()
+    except Result.DoesNotExist:
+        print('Result #{id} does not exist !')
+
+    return redirect('results_index')
+

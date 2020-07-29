@@ -9,6 +9,7 @@ $('input[name=dataset]').on('change', function () {
     else $('#load-dataset-btn').attr('disabled', 'disabled')
     // set filename
     $('#file-name').html($(this).val())
+    $('#visual').html('')
 })
 
 
@@ -30,11 +31,14 @@ $('#load-dataset-btn').click(function () {
             contentType: false,
             success: function (data) {
                 resetInputs()
-                console.log(data);
+                toastr.success('Dataset loaded successfuly', {
+                    timeOut: 3000
+                })
             },
             error: function (err) {
                 resetInputs()
-                console.log(err);
+                $('#visual').html(err.responseJSON.visual)
+                toastr.error(err.responseJSON.message ?? '', 'Some records are missing')
             }
         });
     }
