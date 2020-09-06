@@ -35,11 +35,6 @@ def kmeans(args):
     datasetDf = args.get('datasetDf')
     plotingColumns = int(args.get('plotingColumns'))
 
-    # normalization
-    if (True):
-        scaler = preprocessing.MinMaxScaler()
-        datasetMatrix = scaler.fit_transform(datasetDf)
-
     model = KMeans(n_clusters=clustersNumber)
     model.fit(datasetMatrix)
 
@@ -48,7 +43,7 @@ def kmeans(args):
 
     # remove some features
     # datasetDf = datasetDf.drop(['Age'],axis=1)
-
+    return {'reutl': 'done'}
     visual, labeledDataset = variablesSprendingPlot(model, datasetDf, plotingColumns)
     
     return {'visual': visual, 'data': {'labeledDataset': labeledDataset.drop(['Constant'],axis=1).to_json(), 'centers': centers}}

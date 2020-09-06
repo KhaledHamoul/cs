@@ -17,7 +17,7 @@ class Dataset(models.Model):
             sort_keys=True, indent=4)
 
     title = models.CharField(max_length=200)
-    description = models.CharField(max_length=200)
+    description = models.TextField(max_length=200)
     deleted = models.BooleanField(default=False)
     # foreign keys
     parent = models.ForeignKey('Dataset', on_delete=models.DO_NOTHING, null=True)
