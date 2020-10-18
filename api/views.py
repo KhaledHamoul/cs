@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 from api.helpers import switcher, buildDatasetMatrix, buildDataFrame
 from api.pre_processing import pre_processing
 import pandas as pd
+from sklearn.decomposition import PCA
 
 # upload & validate dataset
 
@@ -19,13 +20,20 @@ import pandas as pd
 @csrf_exempt
 def upload_dataset(request):
     csvfile = request.FILES['dataset']
+    datasetName = request.POST.get('dataset_name')
+    datasetDescription = request.POST.get('dataset_description') if request.POST.get('dataset_description') != None else ''
+    allowMissinValues = request.POST.get('Allow_missing_values')
 
+    print(allowMissinValues)
     # link : https://www.kaggle.com/smohubal/market-customer-segmentation-clustering/notebook
     try:
-        tmpCsvfile = pd.read_csv(csvfile)
-        datasetInstance = pre_processing(tmpCsvfile)
-        visual, data = datasetInstance.missing_percent()
-        return JsonResponse({'data': data, 'visual': visual}, status=400)
+        if allowMissinValues == 'false':
+            tmpCsvfile = pd.read_csv(csvfile)
+            datasetInstance = pre_processing(tmpCsvfile)
+            visual, data = datasetInstance.missing_percent()
+            return JsonResponse({'data': data, 'visual': visual}, status=400)
+        else:
+            csvfile.seek(0)
     except Exception:
         csvfile.seek(0)
 
@@ -41,13 +49,17 @@ def upload_dataset(request):
         records.append(row)
 
     # create the dataset
-    dataset = Dataset(title='Dataset_name')
+    dataset = Dataset(title=datasetName, description=datasetDescription)
     dataset.save()
 
     # save the attributes
     for attributeName in attributes:
-        attributeInstance = Attribute(name=attributeName, label=attributeName)
-        attributeInstance.save()
+        try:
+            attributeInstance = Attribute.objects.get(name=attributeName)
+        except Attribute.DoesNotExist:
+            attributeInstance = Attribute(name=attributeName, label=attributeName)
+            attributeInstance.save()
+            
         dataset.attributes.add(attributeInstance)
 
     # save the records
@@ -66,9 +78,14 @@ def optimum_clusters_number(request):
     datasetId = request.POST.get('datasetId')
     method = request.POST.get('method')
     maxIterationsNumeber = request.POST.get('maxIterationsNumeber')
+    pcaComponents = request.POST.get('pcaComponents')
 
     dataset = Dataset.objects.get(id=datasetId)
     datasetMatrix = buildDatasetMatrix(dataset=dataset)
+
+    if pcaComponents != "" and pcaComponents != 0:
+        pca = PCA(n_components=float(pcaComponents))
+        datasetMatrix = pca.fit_transform(datasetMatrix)
 
     result = switcher(method=method, args={
                       'datasetMatrix': datasetMatrix, 'maxIterationsNumeber': maxIterationsNumeber})

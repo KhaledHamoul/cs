@@ -67,6 +67,17 @@
                                                 min="2" max="100">
                                         </div>
                                     </div>
+                                    <div class="col-sm-4 mt-3">
+                                        <div class="form-group">
+                                            <label for="pcaComponents">PCA components
+                                                <i class="fas fa-question-circle" title="percentage [0 < x < 1] - number of components [>= 1] - Not appied [x = 0]"></i></a>
+                                            </label>
+                                            <input type="number" name="pcaComponents" class="form-control" min="0"
+                                                max="100">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
                                     <div class="ml-auto col-sm-6">
                                         <button class="btn btn-success float-right submit-btn">Run</button>
                                     </div>
@@ -78,10 +89,10 @@
                         <div class="card">
                             <div class="card-header">
                                 <h5>Result</h5>
-                                <div class="btn-group btn-group-toggle float-right" data-toggle="buttons">
-                                    <button type="button"  class="btn btn-secondary btn-lg active">Matplotlib</button>
-                                    <button type="button"  class="btn btn-secondary btn-sm">D3</button>
-                                </div>
+                                {% comment %} <div class="btn-group btn-group-toggle float-right" data-toggle="buttons">
+                                    <button type="button" class="btn btn-secondary btn-lg active">Matplotlib</button>
+                                    <button type="button" class="btn btn-secondary btn-sm">D3</button>
+                                </div> {% endcomment %}
                             </div>
                             <div class="card-block">
                                 <div class="row">
@@ -103,35 +114,39 @@
 
 <!-- Specific Page JS goes HERE  -->
 {% block javascripts %}
+{% comment %} <script src="https://code.jquery.com/jquery-migrate-3.0.0.min.js"></script> {% endcomment %}
 <script>
-    $('.submit-btn').on('click', function () {
-        const submitBtn = $(this)
-        if ($('select[name=dataset]').val() && $('select[name=method]').val()) {
-            submitBtn.attr('disabled', 'disabled')
-            $('#results-container').html('<i class="fas fa-spinner fa-pulse"></i>')
+    $(function () {
+        $('.submit-btn').on('click', function () {
+            const submitBtn = $(this)
+            if ($('select[name=dataset]').val() && $('select[name=method]').val()) {
+                submitBtn.attr('disabled', 'disabled')
+                $('#results-container').html('<i class="fas fa-spinner fa-pulse"></i>')
 
-            $.ajax({
-                url: '/api/analysis/optimum_clusters_number',
-                method: 'POST',
-                data: {
-                    method: $('select[name=method]').val(),
-                    datasetId: $('select[name=dataset]').val(),
-                    maxIterationsNumeber: $('input[name=maxIterationsNumeber]').val()
-                },
-                dataType: 'json',
-                timeout: 0,
-                success: function (data) {
-                    submitBtn.removeAttr('disabled')
-                    $('#results-container').html(data.visual)
-                },
-                error: function (err) {
-                    submitBtn.removeAttr('disabled')
-                    alert('An unexpected error occured')
-                    console.log(err)
-                }
-            })
-        } else alert('Please select options first')
-    })
+                $.ajax({
+                    url: '/api/analysis/optimum_clusters_number',
+                    method: 'POST',
+                    data: {
+                        method: $('select[name=method]').val(),
+                        datasetId: $('select[name=dataset]').val(),
+                        maxIterationsNumeber: $('input[name=maxIterationsNumeber]').val(),
+                        pcaComponents: $('input[name=pcaComponents]').val()
+                    },
+                    dataType: 'json',
+                    timeout: 0,
+                    success: function (data) {
+                        submitBtn.removeAttr('disabled')
+                        $('#results-container').html(data.visual)
+                    },
+                    error: function (err) {
+                        submitBtn.removeAttr('disabled')
+                        alert('An unexpected error occured')
+                        console.log(err)
+                    }
+                })
+            } else alert('Please select options first')
+        })
+    });
 </script>
 
 {% endblock javascripts %}

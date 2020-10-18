@@ -33,11 +33,32 @@
                         <div class="card">
                             <div class="card-header">
                                 <h5>Load dataset</h5>
-                                <div class="float-right">
-                                    <input type="file" name="dataset" accept=".csv" style="display: none">
-                                    <i class="feather icon-file" id="choose-file-icon"></i>
-                                    <button class="btn btn-success mb-3" id="load-dataset-btn" disabled>Load dataset <i class="fas fa-spinner fa-pulse" style="display: none" id="file-upload-spinner"></i></button>
-                                    <div id="file-name"></div>
+                                <div class="row mt-5">
+                                    <div class="col-md-12 mb-3">
+                                        <label>Dataset File</label><br/>
+                                        <i class="feather icon-file" id="choose-file-icon"></i>
+                                        <div id="file-name"></div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label>Name</label>
+                                        <input type="text" name="dataset_name" class="form-control">
+                                    </div>
+                                    <div class="col-md-9 pl-5">
+                                        <label>Description</label>
+                                        <input type="text" name="dataset_description" class="form-control">
+                                    </div>
+                                    <div class="col-md-2 mt-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input" name="Allow_missing_values" type="checkbox">
+                                            <label class="form-check-label" for="defaultCheck1">Allow missing values</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12 mt-5">
+                                        <div class="float-right">
+                                            <input type="file" name="dataset" accept=".csv" style="display: none">
+                                            <button class="btn btn-success mb-3" id="load-dataset-btn" disabled>Load dataset <i class="fas fa-spinner fa-pulse" style="display: none" id="file-upload-spinner"></i></button>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div id="visual" class="text-center mt-5 mb-5"></div>
                             </div>

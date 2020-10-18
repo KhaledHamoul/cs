@@ -2,7 +2,7 @@ import hashlib
 import time
 import json
 from matplotlib import pyplot as plt
-from sklearn.cluster import KMeans, AgglomerativeClustering, SpectralClustering
+from sklearn.cluster import KMeans, AgglomerativeClustering, SpectralClustering, MiniBatchKMeans, Birch, MeanShift, DBSCAN, OPTICS
 from sklearn import metrics, preprocessing
 import scipy
 from scipy.spatial.distance import cdist
@@ -30,26 +30,46 @@ matplotlib.use('Agg')
 
 
 def kmeans(args):
+    print('kmeans')
     clustersNumber = int(args.get('clustersNumber'))
     datasetMatrix = args.get('datasetMatrix')
     datasetDf = args.get('datasetDf')
     plotingColumns = int(args.get('plotingColumns'))
 
     model = KMeans(n_clusters=clustersNumber)
-    model.fit(datasetMatrix)
+    algoResult = model.fit(datasetMatrix)
+
+    labels = algoResult.labels_
 
     centers = model.cluster_centers_
     centers = json.dumps(centers.tolist())
 
     # remove some features
     # datasetDf = datasetDf.drop(['Age'],axis=1)
-    return {'reutl': 'done'}
-    visual, labeledDataset = variablesSprendingPlot(model, datasetDf, plotingColumns)
-    
-    return {'visual': visual, 'data': {'labeledDataset': labeledDataset.drop(['Constant'],axis=1).to_json(), 'centers': centers}}
+    # visual, labeledDataset = variablesSprendingPlot(
+    #     model, datasetDf, plotingColumns)
+
+    from api.helpers import plotPca3d, getPltImage, indexes
+    plt = plotPca3d(datasetDf=datasetDf, labels=labels)
+
+    visual = '<div class="col-sm-12">' + getPltImage(plt) + '</div>'
+    visual = '<div class="row">' + visual + '</div>'
+
+    plt.close("all")
+
+    labels = pd.DataFrame(model.labels_)
+    labeledDataset = pd.concat((datasetDf, labels), axis=1)
+    labeledDataset = labeledDataset.rename({0: 'labels'}, axis=1)
+
+    labeledDataset['Constant'] = "Data"
+
+    indexes = indexes(datasetDf=datasetDf, labels=algoResult.labels_, num_clusters=clustersNumber)
+
+    return {'visual': visual, 'data': {'labeledDataset': labeledDataset.drop(['Constant'], axis=1).to_json(), 'centers': centers}, 'indexes': indexes}
 
 
 def hierarchical(args):
+    print('hierarchical')
     clustersNumber = int(args.get('clustersNumber'))
     datasetMatrix = args.get('datasetMatrix')
     datasetDf = args.get('datasetDf')
@@ -57,25 +77,26 @@ def hierarchical(args):
     linkageMethod = args.get('linkageMethod')
 
     # normalization
-    if (True):
-        scaler = preprocessing.MinMaxScaler()
-        datasetMatrix = scaler.fit_transform(datasetDf)
+    # if (True):
+    #     scaler = preprocessing.MinMaxScaler()
+    #     datasetMatrix = scaler.fit_transform(datasetDf)
 
     # D = pairwise_distances(datasetMatrix)
     # print('=========')
     # print(max(map(max, D)))
     # print('=========')
 
-    model = AgglomerativeClustering(n_clusters=clustersNumber, affinity='euclidean', linkage=linkageMethod)
+    model = AgglomerativeClustering(
+        n_clusters=clustersNumber, affinity='euclidean', linkage=linkageMethod)
     model.fit_predict(datasetMatrix)
 
     labels = pd.DataFrame(model.labels_)
-    labeledDataset = pd.concat((datasetDf,labels),axis=1).rename({0:'labels'},axis=1)
+    labeledDataset = pd.concat(
+        (datasetDf, labels), axis=1).rename({0: 'labels'}, axis=1)
 
     linked = linkage(datasetMatrix, linkageMethod)
     # print(linked)
-    print(max(map(max, linked)))
-
+    # print(max(map(max, linked)))
 
     matplotlib.rcParams['lines.linewidth'] = 4
 
@@ -83,16 +104,16 @@ def hierarchical(args):
     plt.grid()
     plt.yticks(fontsize=50)
     fancy_dendrogram(linked,
-                orientation='top',
-                distance_sort='descending',
-                truncate_mode='lastp',  # show only the last p merged clusters
-                p=clustersNumber,  # show only the last p merged clusters
-                color_threshold=0.1*2,
-                leaf_rotation=90.,
-                leaf_font_size=60.,
-                show_contracted=True,
-                annotate_above=1,
-                max_d=1)
+                     orientation='top',
+                     distance_sort='descending',
+                     truncate_mode='lastp',  # show only the last p merged clusters
+                     p=clustersNumber,  # show only the last p merged clusters
+                     color_threshold=0.1*2,
+                     leaf_rotation=90.,
+                     leaf_font_size=60.,
+                     show_contracted=True,
+                     annotate_above=1,
+                     max_d=1)
 
     # avoid circular imports (error)
     from api.helpers import getPltImage
@@ -109,6 +130,7 @@ def hierarchical(args):
 
 
 def spectral(args):
+    print('spectral')
     clustersNumber = int(args.get('clustersNumber'))
     datasetMatrix = args.get('datasetMatrix')
     datasetDf = args.get('datasetDf')
@@ -127,44 +149,142 @@ def spectral(args):
     print(S)
     print('=========')
 
-    model = SpectralClustering(n_clusters=clustersNumber, affinity='precomputed')
+    model = SpectralClustering(
+        n_clusters=clustersNumber, affinity='precomputed')
     model.fit(S)
+
+
+    visual, labeledDataset = variablesSprendingPlot(
+        model, datasetDf, plotingColumns)
+
+    return {'visual': visual, 'data': {'labeledDataset': labeledDataset.drop(['Constant'], axis=1).to_json()}}
+
+
+def mini_batch_kmeans(args):
+    print('mini batch kmeans')
+    clustersNumber = int(args.get('clustersNumber'))
+    datasetMatrix = args.get('datasetMatrix')
+    datasetDf = args.get('datasetDf')
+    plotingColumns = int(args.get('plotingColumns'))
+
+    model = MiniBatchKMeans(n_clusters=clustersNumber)
+    model.fit(datasetMatrix)
 
     centers = model.cluster_centers_
     centers = json.dumps(centers.tolist())
-    print(centers)
 
-    visual, labeledDataset = variablesSprendingPlot(model, datasetDf, plotingColumns)
+    # remove some features
+    # datasetDf = datasetDf.drop(['Age'],axis=1)=
+    visual, labeledDataset = variablesSprendingPlot(
+        model, datasetDf, plotingColumns)
 
-    return {'visual': visual, 'data': {'labeledDataset': labeledDataset.drop(['Constant'],axis=1).to_json()}}
+    return {'visual': visual, 'data': {'labeledDataset': labeledDataset.drop(['Constant'], axis=1).to_json(), 'centers': centers}}
 
-# private 
+
+def birch(args):
+    print('birch')
+    clustersNumber = int(args.get('clustersNumber'))
+    datasetMatrix = args.get('datasetMatrix')
+    datasetDf = args.get('datasetDf')
+    plotingColumns = int(args.get('plotingColumns'))
+
+    model = Birch(n_clusters=clustersNumber)
+    model.fit(datasetMatrix)
+
+    # remove some features
+    # datasetDf = datasetDf.drop(['Age'],axis=1)
+    visual, labeledDataset = variablesSprendingPlot(
+        model, datasetDf, plotingColumns)
+
+    return {'visual': visual, 'data': {'labeledDataset': labeledDataset.drop(['Constant'], axis=1).to_json()}}
+
+
+def mean_shift(args):
+    print('mean shift')
+    clustersNumber = int(args.get('clustersNumber'))
+    datasetMatrix = args.get('datasetMatrix')
+    datasetDf = args.get('datasetDf')
+    plotingColumns = int(args.get('plotingColumns'))
+
+    model = MeanShift()
+    model.fit(datasetMatrix)
+
+    # centers = model.cluster_centers_
+    # centers = json.dumps(centers.tolist())
+
+    # remove some features
+    # datasetDf = datasetDf.drop(['Age'],axis=1)
+    visual, labeledDataset = variablesSprendingPlot(
+        model, datasetDf, plotingColumns)
+
+    return {'visual': visual, 'data': {'labeledDataset': labeledDataset.drop(['Constant'], axis=1).to_json()}}
+
+
+def dbscan(args):
+    print('dbscan')
+    clustersNumber = int(args.get('clustersNumber'))
+    datasetMatrix = args.get('datasetMatrix')
+    datasetDf = args.get('datasetDf')
+    plotingColumns = int(args.get('plotingColumns'))
+
+    model = DBSCAN()
+    model.fit(datasetMatrix)
+
+    # remove some features
+    # datasetDf = datasetDf.drop(['Age'],axis=1)
+    visual, labeledDataset = variablesSprendingPlot(
+        model, datasetDf, plotingColumns)
+
+    return {'visual': visual, 'data': {'labeledDataset': labeledDataset.drop(['Constant'], axis=1).to_json()}}
+
+
+def optics(args):
+    print('optics')
+    clustersNumber = int(args.get('clustersNumber'))
+    datasetMatrix = args.get('datasetMatrix')
+    datasetDf = args.get('datasetDf')
+    plotingColumns = int(args.get('plotingColumns'))
+
+    model = OPTICS()
+    model.fit(datasetMatrix)
+
+    # remove some features
+    # datasetDf = datasetDf.drop(['Age'],axis=1)
+    visual, labeledDataset = variablesSprendingPlot(
+        model, datasetDf, plotingColumns)
+
+    return {'visual': visual, 'data': {'labeledDataset': labeledDataset.drop(['Constant'], axis=1).to_json()}}
+
+
+# private
 def variablesSprendingPlot(model, datasetDf, plotingColumns):
     labels = pd.DataFrame(model.labels_)
-    labeledDataset = pd.concat((datasetDf,labels),axis=1)
-    labeledDataset = labeledDataset.rename({0:'labels'},axis=1)
+    labeledDataset = pd.concat((datasetDf, labels), axis=1)
+    labeledDataset = labeledDataset.rename({0: 'labels'}, axis=1)
 
     labeledDataset['Constant'] = "Data"
 
     featuresNumber = len(list(labeledDataset))
     plotColumns = plotingColumns
-    plotRows = ceil((featuresNumber  - 2) / plotColumns)
-    
-    f, axes = plt.subplots(plotRows, plotColumns, sharex=False) 
+    plotRows = ceil((featuresNumber - 2) / plotColumns)
+
+    f, axes = plt.subplots(plotRows, plotColumns, sharex=False)
     f.set_size_inches(18, 9 * plotRows)
     f.subplots_adjust(hspace=0.2, wspace=0.7)
 
-    for i in range(0,plotRows):
+    for i in range(0, plotRows):
         for j in range(0, plotColumns):
             featuresNumber -= 1
             if featuresNumber > 1:
                 col = labeledDataset.columns[j + (i * plotColumns)]
-                
+
                 try:
-                    ax = sns.swarmplot(x=labeledDataset['Constant'],y=labeledDataset[col].values,hue=labeledDataset['labels'],ax=axes[i, j])
+                    ax = sns.swarmplot(
+                        x=labeledDataset['Constant'], y=labeledDataset[col].values, hue=labeledDataset['labels'], ax=axes[i, j])
                     ax.set_title(col)
                 except Exception:
-                    ax = sns.swarmplot(x=labeledDataset['Constant'],y=labeledDataset[col].values,hue=labeledDataset['labels'],ax=axes[j])
+                    ax = sns.swarmplot(
+                        x=labeledDataset['Constant'], y=labeledDataset[col].values, hue=labeledDataset['labels'], ax=axes[j])
                     ax.set_title(col)
 
     # avoid circular imports (error)
@@ -202,3 +322,4 @@ def fancy_dendrogram(*args, **kwargs):
         if max_d:
             plt.axhline(y=max_d, linewidth=7, color='#f00')
     return ddata
+

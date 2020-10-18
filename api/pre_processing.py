@@ -7,7 +7,7 @@ from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.cluster import KMeans
 from tqdm import tqdm
 import warnings
-
+from matplotlib.pyplot import figure
 
 class pre_processing:
 
@@ -28,9 +28,19 @@ class pre_processing:
             df = pd.DataFrame()
             df['Total'] = self.data.isna().sum()
             df['perc_missing'] = missing_percent
+
+            fig = figure(num=None, figsize=(16, 12), dpi=80, facecolor='w', edgecolor='k')
+            left = 0.05
+            bottom = 0.25
+            width = 0.9
+            height = 0.65
+            fig.add_axes([left, bottom, width, height])
+
             p = sns.barplot(x=df.perc_missing.index, y='perc_missing', data=df)
-            plt.xticks(rotation=0)
-            p.tick_params(labelsize=14)
+            plt.ylabel('- Missing values (%) -')
+            plt.xlabel('- Dataset attributes -')
+            plt.xticks(rotation=80)
+            p.tick_params(labelsize=12)
 
             # avoid circular imports (error)
             from api.helpers import getPltImage

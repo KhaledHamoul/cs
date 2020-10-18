@@ -6,7 +6,7 @@ from django import template
 from django.template.response import TemplateResponse
 from pprint import pprint
 from logging import warning
-from app.models import Dataset
+from app.models import Dataset, Record, Attribute
 from api.models import Result
 from django.db.models import Count
 import json
@@ -14,7 +14,19 @@ import json
 
 @login_required(login_url="/login/")
 def index(request):
-    return render(request, "index.html")
+    datasets = Dataset.objects.count()
+    records = Record.objects.count()
+    attributes = Attribute.objects.count()
+    results = Result.objects.count()
+
+    params = {
+        'datasets': datasets,
+        'records': records,
+        'attributes': attributes,
+        'results': results
+    }
+
+    return render(request, "index.html", params)
 
 
 @login_required(login_url="/login/")
@@ -62,7 +74,8 @@ def data_index(request):
 def data_view(request, id):
     try:
         dataset = Dataset.objects.get(id=id)
-        return render(request, "data/view.html", {'dataset': dataset})
+        records = dataset.records.all()[0:40]
+        return render(request, "data/view.html", {'dataset': dataset, 'records': records})
     except Dataset.DoesNotExist:
         print('Dataset #{id} does not exist !')
         return redirect('data_index')
@@ -86,8 +99,11 @@ def data_update(request, id):
 def data_delete(request, id):
     try:
         dataset = Dataset.objects.get(id=id)
-        dataset.deleted = True
-        dataset.save()
+        # dataset.attributes.all().delete()
+        dataset.records.all().delete()
+        dataset.delete()
+        # dataset.deleted = True
+        # dataset.save()
     except Dataset.DoesNotExist:
         print('Dataset #{id} does not exist !')
 
@@ -123,17 +139,42 @@ def clustering(request):
         {
             "label": 'K-Means',
             "method": 'kmeans',
-            "info" : "k-means lorem ipsum"
+            "info": "k-means lorem ipsum"
+        },
+        {
+            "label": 'MiniBatch K-Means',
+            "method": 'mini_batch_kmeans',
+            "info": "MiniBatch k-means lorem ipsum"
+        },
+        {
+            "label": 'Birch',
+            "method": 'birch',
+            "info": "MiniBatch k-means lorem ipsum"
         },
         {
             "label": 'Hierarchical',
             "method": 'hierarchical',
-            "info" : "Hirarchical lorem ipsum"
+            "info": "Hirarchical lorem ipsum"
         },
         {
             "label": 'Spectral',
             "method": 'spectral',
-            "info" : "Spectral lorem ipsum"
+            "info": "Spectral lorem ipsum"
+        },
+        {
+            "label": 'MeanShift',
+            "method": 'mean_shift',
+            "info": "MiniBatch k-means lorem ipsum"
+        },
+        {
+            "label": 'DBSCAN',
+            "method": 'dbscan',
+            "info": "MiniBatch k-means lorem ipsum"
+        },
+        {
+            "label": 'OPTICS',
+            "method": 'optics',
+            "info": "MiniBatch k-means lorem ipsum"
         }
     ]
 
@@ -156,7 +197,8 @@ def clustering(request):
         }
     ]
 
-    return render(request, "analysis/clustering.html", {'datasets': datasets, 'algorithms': algorithms, "linkageMethods": linkageMethods })
+    return render(request, "analysis/clustering.html", {'datasets': datasets, 'algorithms': algorithms, "linkageMethods": linkageMethods})
+
 
 @login_required(login_url="/login/")
 def results_index(request):
@@ -175,6 +217,8 @@ def results_view(request, id):
         return redirect('results_index')
 
 # delete
+
+
 @login_required(login_url="/login/")
 def results_delete(request, id):
     try:
@@ -184,4 +228,3 @@ def results_delete(request, id):
         print('Result #{id} does not exist !')
 
     return redirect('results_index')
-

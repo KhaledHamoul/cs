@@ -34,7 +34,7 @@
                     <div class="col-xl-12">
                         <div class="card">
                             <div class="card-header">
-                                <h5>Datasets</h5>
+                                <h5>Datasets Head (50 first records)</h5>
                             </div>
                             <div class="card-block table-border-style">
                                 <div class="table-responsive">
@@ -47,7 +47,7 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {% for record in dataset.records.all %}
+                                            {% for record in records %}
                                             <tr>
                                                 {% for attribute in dataset.attributes.all %}
                                                 <td>{{ record.data|get_item:attribute.name }}</td>
