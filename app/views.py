@@ -128,6 +128,7 @@ def optimum_clusters_number(request):
             "method": 'gap_statistic'
         }
     ]
+    
     return render(request, "analysis/optimum_clusters_number.html", {'datasets': datasets, 'algorithms': algorithms})
 
 

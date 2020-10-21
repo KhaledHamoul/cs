@@ -13,6 +13,7 @@ from api.helpers import switcher, buildDatasetMatrix, buildDataFrame
 from api.pre_processing import pre_processing
 import pandas as pd
 from sklearn.decomposition import PCA
+import time
 
 # upload & validate dataset
 
@@ -75,6 +76,8 @@ def upload_dataset(request):
 
 @csrf_exempt
 def optimum_clusters_number(request):
+    start_time = time.time()
+
     datasetId = request.POST.get('datasetId')
     method = request.POST.get('method')
     maxIterationsNumeber = request.POST.get('maxIterationsNumeber')
@@ -83,16 +86,20 @@ def optimum_clusters_number(request):
     dataset = Dataset.objects.get(id=datasetId)
     datasetMatrix = buildDatasetMatrix(dataset=dataset)
 
-    if pcaComponents != "" and pcaComponents != 0:
-        pca = PCA(n_components=float(pcaComponents))
+    if pcaComponents != "" and pcaComponents != 0 :
+        pca = PCA(n_components=float(pcaComponents) if float(pcaComponents) < 1 else int(pcaComponents))
         datasetMatrix = pca.fit_transform(datasetMatrix)
+
 
     result = switcher(method=method, args={
                       'datasetMatrix': datasetMatrix, 'maxIterationsNumeber': maxIterationsNumeber})
 
+    executionTime = time.time() - start_time
+    result['executionTime'] = executionTime
+    
     return JsonResponse(result)
 
-# optimum_clusters_number
+# clustering
 
 
 @csrf_exempt
@@ -100,18 +107,25 @@ def clustering(request):
     datasetId = request.POST.get('datasetId')
     method = request.POST.get('method')
     clustersNumber = request.POST.get('clustersNumber')
-    plotingColumns = request.POST.get('plotingColumns')
+    samplingPoints = request.POST.get('samplingPoints')
     linkageMethod = request.POST.get('linkageMethod')
+    pcaComponents = request.POST.get('pcaComponents')
 
     dataset = Dataset.objects.get(id=datasetId)
-    datasetMatrix = buildDatasetMatrix(dataset=dataset)
     datasetDf = buildDataFrame(dataset=dataset)
 
+    if pcaComponents != "" and pcaComponents != 0 and (float(pcaComponents) if float(pcaComponents) < 1 else int(pcaComponents)) > 2:
+        print('========= PCA Applied =========')
+        pca = PCA(n_components=float(pcaComponents) if float(pcaComponents) < 1 else int(pcaComponents))
+        datasetDf = pca.fit_transform(datasetDf)
+        columns = ['PC'+str(i) for i in range(datasetDf.shape[1])]
+        datasetDf = pd.DataFrame(datasetDf, columns=columns)
+        clustersNumber = datasetDf.shape[1]
+
     args = {
-        'datasetMatrix': datasetMatrix,
         'datasetDf': datasetDf,
         'clustersNumber': clustersNumber,
-        'plotingColumns': plotingColumns,
+        'samplingPoints': samplingPoints,
         'linkageMethod': linkageMethod
     }
 

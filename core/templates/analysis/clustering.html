@@ -51,7 +51,7 @@
                             <div class="card-header">
                                 <h5>Clustering</h5>
                             </div>
-                            <div class="card-block">
+                            <div class="card-block exec-block">
                                 <div class="row">
                                     <div class="col-sm-12">
                                         <div class="alert alert-info"><i class="fas fa-question-circle"></i> &nbsp;
@@ -59,7 +59,7 @@
                                     </div>
                                 </div>
                                 <div class="row">
-                                    <div class="col-sm-2">
+                                    <div class="col-sm-3">
                                         <div class="form-group">
                                             <label for="exampleFormControlSelect1">Dataset</label>
                                             <select name="dataset" class="form-control">
@@ -70,7 +70,7 @@
                                             </select>
                                         </div>
                                     </div>
-                                    <div class="col-sm-2">
+                                    <div class="col-sm-3">
                                         <div class="form-group">
                                             <label for="method">Clustering Mothod</label>
                                             <select name="method" class="form-control">
@@ -82,21 +82,21 @@
                                             </select>
                                         </div>
                                     </div>
-                                    <div class="col-sm-2">
+                                    <div class="col-sm-3">
                                         <div class="form-group">
                                             <label for="clustersNumber">Number of Clusters</label>
                                             <input type="number" name="clustersNumber" class="form-control" min="2"
-                                                max="100" value="3">
+                                                max="100" value="6">
                                         </div>
                                     </div>
-                                    <div class="col-sm-2">
+                                    <div class="col-sm-3">
                                         <div class="form-group">
-                                            <label for="clustersNumber">Sampling Points</label>
-                                            <input type="number" name="plotingColumns" class="form-control" min="1"
-                                                max="6" value="3">
+                                            <label for="samplingPoints">Sampling Points</label>
+                                            <input type="number" name="samplingPoints" class="form-control" min="1"
+                                                max="6" value="100">
                                         </div>
                                     </div>
-                                    <div class="col-sm-2">
+                                    <div class="col-sm-2" style="display: none">
                                         <div class="form-group">
                                             <label for="clustersNumber">Linkage Method <a
                                                     href="https://scikit-learn.org/stable/auto_examples/cluster/plot_linkage_comparison.html#"
@@ -110,6 +110,16 @@
                                             </select>
                                         </div>
                                     </div>
+                                    <div class="col-sm-4 mt-3">
+                                        <div class="form-group">
+                                            <label for="pcaComponents">PCA components
+                                                <i class="fas fa-question-circle"
+                                                    title="Not applied [x = 0] - number of components [>= 3] - percentage [0 < x < 1]"></i></a>
+                                            </label>
+                                            <input type="number" name="pcaComponents" class="form-control" min="0"
+                                                max="100">
+                                        </div>
+                                    </div>
                                     <div class="col-sm-8"></div>
                                     <div class="ml-auto col-sm-6">
                                         <button class="btn btn-success float-right run-btn">Run</button>
@@ -118,6 +128,68 @@
                             </div>
                         </div>
                     </div>
+                    {% comment %} indexes {% endcomment %}
+                    <div class="col-md-3">
+                        <div class="card">
+                            <div class="card-block border-bottom">
+                                <div class="row d-flex align-items-center">
+                                    <div class="col-auto">
+                                        <i class="feather icon-alert-circle f-30 text-c-green"></i>
+                                    </div>
+                                    <div class="col">
+                                        <h3 class="f-w-300" id="dbi">0</h3>
+                                        <span class="d-block text-uppercase">Davies-Boulding Index</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card">
+                            <div class="card-block border-bottom">
+                                <div class="row d-flex align-items-center">
+                                    <div class="col-auto">
+                                        <i class="feather icon-alert-circle f-30 text-c-green"></i>
+                                    </div>
+                                    <div class="col">
+                                        <h3 class="f-w-300" id="cs">0</h3>
+                                        <span class="d-block text-uppercase">Calinski-Harbantz Index</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card">
+                            <div class="card-block border-bottom">
+                                <div class="row d-flex align-items-center">
+                                    <div class="col-auto">
+                                        <i class="feather icon-alert-circle f-30 text-c-green"></i>
+                                    </div>
+                                    <div class="col">
+                                        <h3 class="f-w-300" id="ss">0</h3>
+                                        <span class="d-block text-uppercase">Silhouette Score</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card">
+                            <div class="card-block border-bottom">
+                                <div class="row d-flex align-items-center">
+                                    <div class="col-auto">
+                                        <i class="feather icon-alert-circle f-30 text-c-green"></i>
+                                    </div>
+                                    <div class="col">
+                                        <h3 class="f-w-300" id="di">0</h3>
+                                        <span class="d-block text-uppercase">Dunn Index</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% comment %} indexes {% endcomment %}
                     <div class="col-sm-12">
                         <div class="card">
                             <div class="card-header">
@@ -129,17 +201,24 @@
                                 <div class="btn-group btn-group-toggle float-right" data-toggle="buttons">
                                     <ul class="nav nav-tabs" id="myTab" role="tablist">
                                         <li class="nav-item mr-1">
-                                            <a class="active btn btn-secondary btn-lg" id="matplotlib-tab"
-                                                data-toggle="tab" href="#matplotlib" role="tab"
-                                                aria-controls="matplotlib">Matplotlib</a>
+                                            <a class="nav-link active" id="matplotlib-tab" data-toggle="tab"
+                                                href="#matplotlib">Matplotlib</a>
                                         </li>
                                         <li class="nav-item mr-1">
-                                            <a class="btn btn-secondary btn-lg" id="3d-pca-tab" data-toggle="tab"
-                                                href="#3d-pca" role="tab" aria-controls="3d-pca">PCA</a>
+                                            <a class="nav-link" id="3d-pca-tab" data-toggle="tab" href="#3d-pca">3D
+                                                PCA</a>
                                         </li>
-                                        <li class="nav-item">
-                                            <a class="btn btn-secondary btn-lg" id="3d-tsne-tab" data-toggle="tab"
-                                                href="#3d-tsne" role="tab" aria-controls="3d-tsne">t-SNE</a>
+                                        <li class="nav-item mr-1">
+                                            <a class="nav-link" id="3d-tsne-tab" data-toggle="tab"
+                                                href="#3d-tsne">t-SNE</a>
+                                        </li>
+                                        <li class="nav-item mr-1">
+                                            <a class="nav-link" id="para-coord-tab" data-toggle="tab"
+                                                href="#para-coord">Parallel Coordinates</a>
+                                        </li>
+                                        <li class="nav-item mr-1">
+                                            <a class="nav-link" id="para-centroids-tab" data-toggle="tab"
+                                                href="#para-centroids">Parallel Centroids</a>
                                         </li>
                                     </ul>
                                 </div>
@@ -148,19 +227,24 @@
                                 <div class="row">
                                     <div class="ml-auto col-sm-12 text-center">
                                         <div class="tab-content" id="myTabContent">
-                                            <div class="tab-pane fade show active" id="matplotlib" role="tabpanel"
-                                                aria-labelledby="home-tab">
-                                                <div id="results-container" style="height: 90vh;"></div>
+                                            <div class="tab-pane show active" id="matplotlib" role="tabpanel">
+                                                <div id="visual-pca3d" style="height: 90vh;"></div>
                                             </div>
-                                            <div class="tab-pane fade" id="3d-pca" role="tabpanel"
-                                                aria-labelledby="profile-tab">
+                                            <div class="tab-pane" id="3d-pca" role="tabpanel">
                                                 <iframe id="3d_pca_iframe" src=""
                                                     style="width: 100%; height: 90vh; border: none;"></iframe>
                                             </div>
-                                            <div class="tab-pane fade" id="3d-tsne" role="tabpanel"
-                                                aria-labelledby="profile-tab">
+                                            <div class="tab-pane" id="3d-tsne" role="tabpanel">
                                                 <iframe id="3d_tsne_iframe" src=""
                                                     style="width: 100%; height: 90vh; border: none;"></iframe>
+                                            </div>
+                                            <div class="tab-pane" id="para-coord" role="tabpanel">
+                                                coord
+                                                <div id="visual-parallelCoord" style="height: 90vh;"></div>
+                                            </div>
+                                            <div class="tab-pane" id="para-centroids" role="tabpanel">
+                                                centroids
+                                                <div id="visual-parallelCentroids" style="height: 90vh;"></div>
                                             </div>
                                         </div>
                                     </div>
@@ -188,7 +272,12 @@
                 $('#results-container').html('<i class="fas fa-spinner fa-pulse"></i>')
                 $('#3d_pca_iframe').attr('src', '')
                 $('#3d_tsne_iframe').attr('src', '')
+                $('#di').html(0)
+                $('#cs').html(0)
+                $('#ss').html(0)
+                $('#dbi').html(0)
 
+                $('.card-block.exec-block').LoadingOverlay("show")
 
                 $.ajax({
                     url: '/api/analysis/clustering',
@@ -197,20 +286,35 @@
                         method: $('select[name=method]').val(),
                         datasetId: $('select[name=dataset]').val(),
                         clustersNumber: $('input[name=clustersNumber]').val(),
-                        plotingColumns: $('input[name=plotingColumns]').val(),
-                        linkageMethod: $('select[name=linkageMethod]').val()
+                        samplingPoints: $('input[name=samplingPoints]').val(),
+                        linkageMethod: $('select[name=linkageMethod]').val(),
+                        pcaComponents: $('input[name=pcaComponents]').val()
                     },
                     dataType: 'json',
                     timeout: 0,
                     success: function (data) {
+                        $('.card-block.exec-block').LoadingOverlay("hide")
+
+
                         submitBtn.removeAttr('disabled')
                         $('.save-btn').removeAttr('disabled')
-                        $('#results-container').html(data.visual)
+                        
+                        // indexes
+                        $('#di').html(data.indexes.di)
+                        $('#cs').html(data.indexes.cs)
+                        $('#ss').html(data.indexes.ss)
+                        $('#dbi').html(data.indexes.dbs)
+                        // 3d plots
                         $('#3d_pca_iframe').attr('src', '/3d_pca')
                         $('#3d_tsne_iframe').attr('src', '/3d_tsne')
-                        window.result = data
 
-                        setImageViewer()
+                        Object.entries(data.visuals).map(([key, value]) => ({key,value})).forEach(item => {
+                            $('#visual-' + item.key).html(item.value);
+                            console.log('#visual-' + item.key + ' img');
+                            setImageViewer('#visual-' + item.key + ' img') 
+                        });
+
+                        window.result = data
                     },
                     error: function (err) {
                         submitBtn.removeAttr('disabled')
@@ -253,23 +357,16 @@
             if (op.val() != 'hierarchical') $('[name=linkageMethod]').attr('disabled', 'disabled')
             else $('[name=linkageMethod]').removeAttr('disabled')
         })
-
-        $('.nav-item').on('click', e => {
-            e.preventDefault()
-            console.log(e.target)
-            $('.nav-item a').removeClass('active')
-            $(e.target).find('a').addClass('active')
-        })
     });
 
 
     // private 
-    function setImageViewer() {
-        const viewer = new Viewer($('#results-container img')[0], {
+    function setImageViewer(selector) {
+        new Viewer($(selector)[0], {
             inline: true,
-            viewed() {
-                viewer.zoomTo(0.2);
-            },
+            // viewed() {
+            //    viewer.zoomTo(0.2);
+            // },
             toolbar: {
                 zoomIn: 4,
                 zoomOut: 4,

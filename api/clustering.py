@@ -30,14 +30,12 @@ matplotlib.use('Agg')
 
 
 def kmeans(args):
-    print('kmeans')
     clustersNumber = int(args.get('clustersNumber'))
-    datasetMatrix = args.get('datasetMatrix')
     datasetDf = args.get('datasetDf')
-    plotingColumns = int(args.get('plotingColumns'))
+    samplingPoints = args.get('samplingPoints')
 
     model = KMeans(n_clusters=clustersNumber)
-    algoResult = model.fit(datasetMatrix)
+    algoResult = model.fit(datasetDf)
 
     labels = algoResult.labels_
 
@@ -49,11 +47,31 @@ def kmeans(args):
     # visual, labeledDataset = variablesSprendingPlot(
     #     model, datasetDf, plotingColumns)
 
-    from api.helpers import plotPca3d, getPltImage, indexes
-    plt = plotPca3d(datasetDf=datasetDf, labels=labels)
+    from api.helpers import plotPca3d, parallelCoordinates, displayParallelCoordinatesCentroids, tsne, getPltImage, indexes
+    samplingPoints = int(samplingPoints) if samplingPoints != '' else None
 
-    visual = '<div class="col-sm-12">' + getPltImage(plt) + '</div>'
-    visual = '<div class="row">' + visual + '</div>'
+    # 3d PCA plot
+    plt1 = plotPca3d(datasetDf=datasetDf, labels=labels,
+                     sample_points=samplingPoints)
+    visual = '<div class="col-sm-12">' + getPltImage(plt1) + '</div>'
+    pca3d = '<div class="row">' + visual + '</div>'
+
+    # Parallel coordinates plot
+    plt2 = parallelCoordinates(
+        datasetDf=datasetDf, labels=labels, num_clusters=clustersNumber)
+    visual = '<div class="col-sm-12">' + getPltImage(plt2) + '</div>'
+    parallelCoord = '<div class="row">' + visual + '</div>'
+
+    # parallel cooridnates centoirds plot
+    centroids = pd.DataFrame(algoResult.cluster_centers_)
+    centroids['cluster'] = centroids.index
+    plt3 = displayParallelCoordinatesCentroids(
+        centroids, num_clusters=clustersNumber)
+    visual = '<div class="col-sm-12">' + getPltImage(plt3) + '</div>'
+    parallelCentroids = '<div class="row">' + visual + '</div>'
+
+    # t-SNE plot
+    tsne(datasetDf=datasetDf, labels=labels, sample_points=samplingPoints)
 
     plt.close("all")
 
@@ -63,15 +81,26 @@ def kmeans(args):
 
     labeledDataset['Constant'] = "Data"
 
-    indexes = indexes(datasetDf=datasetDf, labels=algoResult.labels_, num_clusters=clustersNumber)
+    indexes = indexes(datasetDf=datasetDf,
+                      labels=algoResult.labels_, num_clusters=clustersNumber)
 
-    return {'visual': visual, 'data': {'labeledDataset': labeledDataset.drop(['Constant'], axis=1).to_json(), 'centers': centers}, 'indexes': indexes}
+    return {
+        'visuals': {
+            'pca3d': pca3d,
+            'parallelCoord': parallelCoord,
+            'parallelCentroids': parallelCentroids
+        },
+        'data': {
+            'labeledDataset': labeledDataset.drop(['Constant'], axis=1).to_json(),
+            'centers': centers
+        },
+        'indexes': indexes
+    }
 
 
 def hierarchical(args):
     print('hierarchical')
     clustersNumber = int(args.get('clustersNumber'))
-    datasetMatrix = args.get('datasetMatrix')
     datasetDf = args.get('datasetDf')
     plotingColumns = int(args.get('plotingColumns'))
     linkageMethod = args.get('linkageMethod')
@@ -79,22 +108,22 @@ def hierarchical(args):
     # normalization
     # if (True):
     #     scaler = preprocessing.MinMaxScaler()
-    #     datasetMatrix = scaler.fit_transform(datasetDf)
+    #     datasetDf = scaler.fit_transform(datasetDf)
 
-    # D = pairwise_distances(datasetMatrix)
+    # D = pairwise_distances(datasetDf)
     # print('=========')
     # print(max(map(max, D)))
     # print('=========')
 
     model = AgglomerativeClustering(
         n_clusters=clustersNumber, affinity='euclidean', linkage=linkageMethod)
-    model.fit_predict(datasetMatrix)
+    model.fit_predict(datasetDf)
 
     labels = pd.DataFrame(model.labels_)
     labeledDataset = pd.concat(
         (datasetDf, labels), axis=1).rename({0: 'labels'}, axis=1)
 
-    linked = linkage(datasetMatrix, linkageMethod)
+    linked = linkage(datasetDf, linkageMethod)
     # print(linked)
     # print(max(map(max, linked)))
 
@@ -132,11 +161,10 @@ def hierarchical(args):
 def spectral(args):
     print('spectral')
     clustersNumber = int(args.get('clustersNumber'))
-    datasetMatrix = args.get('datasetMatrix')
     datasetDf = args.get('datasetDf')
     plotingColumns = int(args.get('plotingColumns'))
 
-    D = pairwise_distances(datasetMatrix)  # Distance matrix
+    D = pairwise_distances(datasetDf)  # Distance matrix
     print('=========')
     print(D)
     print('=========')
@@ -153,7 +181,6 @@ def spectral(args):
         n_clusters=clustersNumber, affinity='precomputed')
     model.fit(S)
 
-
     visual, labeledDataset = variablesSprendingPlot(
         model, datasetDf, plotingColumns)
 
@@ -163,12 +190,11 @@ def spectral(args):
 def mini_batch_kmeans(args):
     print('mini batch kmeans')
     clustersNumber = int(args.get('clustersNumber'))
-    datasetMatrix = args.get('datasetMatrix')
     datasetDf = args.get('datasetDf')
     plotingColumns = int(args.get('plotingColumns'))
 
     model = MiniBatchKMeans(n_clusters=clustersNumber)
-    model.fit(datasetMatrix)
+    model.fit(datasetDf)
 
     centers = model.cluster_centers_
     centers = json.dumps(centers.tolist())
@@ -184,12 +210,11 @@ def mini_batch_kmeans(args):
 def birch(args):
     print('birch')
     clustersNumber = int(args.get('clustersNumber'))
-    datasetMatrix = args.get('datasetMatrix')
     datasetDf = args.get('datasetDf')
     plotingColumns = int(args.get('plotingColumns'))
 
     model = Birch(n_clusters=clustersNumber)
-    model.fit(datasetMatrix)
+    model.fit(datasetDf)
 
     # remove some features
     # datasetDf = datasetDf.drop(['Age'],axis=1)
@@ -202,12 +227,11 @@ def birch(args):
 def mean_shift(args):
     print('mean shift')
     clustersNumber = int(args.get('clustersNumber'))
-    datasetMatrix = args.get('datasetMatrix')
     datasetDf = args.get('datasetDf')
     plotingColumns = int(args.get('plotingColumns'))
 
     model = MeanShift()
-    model.fit(datasetMatrix)
+    model.fit(datasetDf)
 
     # centers = model.cluster_centers_
     # centers = json.dumps(centers.tolist())
@@ -223,12 +247,11 @@ def mean_shift(args):
 def dbscan(args):
     print('dbscan')
     clustersNumber = int(args.get('clustersNumber'))
-    datasetMatrix = args.get('datasetMatrix')
     datasetDf = args.get('datasetDf')
     plotingColumns = int(args.get('plotingColumns'))
 
     model = DBSCAN()
-    model.fit(datasetMatrix)
+    model.fit(datasetDf)
 
     # remove some features
     # datasetDf = datasetDf.drop(['Age'],axis=1)
@@ -241,12 +264,11 @@ def dbscan(args):
 def optics(args):
     print('optics')
     clustersNumber = int(args.get('clustersNumber'))
-    datasetMatrix = args.get('datasetMatrix')
     datasetDf = args.get('datasetDf')
     plotingColumns = int(args.get('plotingColumns'))
 
     model = OPTICS()
-    model.fit(datasetMatrix)
+    model.fit(datasetDf)
 
     # remove some features
     # datasetDf = datasetDf.drop(['Age'],axis=1)
@@ -322,4 +344,3 @@ def fancy_dendrogram(*args, **kwargs):
         if max_d:
             plt.axhline(y=max_d, linewidth=7, color='#f00')
     return ddata
-

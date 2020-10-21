@@ -36,7 +36,7 @@
                             <div class="card-header">
                                 <h5>Optimum Clusters Number</h5>
                             </div>
-                            <div class="card-block">
+                            <div class="card-block exec-block">
                                 <div class="row">
                                     <div class="col-sm-4">
                                         <div class="form-group">
@@ -70,7 +70,7 @@
                                     <div class="col-sm-4 mt-3">
                                         <div class="form-group">
                                             <label for="pcaComponents">PCA components
-                                                <i class="fas fa-question-circle" title="percentage [0 < x < 1] - number of components [>= 1] - Not appied [x = 0]"></i></a>
+                                                <i class="fas fa-question-circle" title="Not applied [x = 0] - number of components [>= 1] - percentage [0 < x < 1]"></i></a>
                                             </label>
                                             <input type="number" name="pcaComponents" class="form-control" min="0"
                                                 max="100">
@@ -123,6 +123,8 @@
                 submitBtn.attr('disabled', 'disabled')
                 $('#results-container').html('<i class="fas fa-spinner fa-pulse"></i>')
 
+                $('.card-block.exec-block').LoadingOverlay("show")
+
                 $.ajax({
                     url: '/api/analysis/optimum_clusters_number',
                     method: 'POST',
@@ -135,10 +137,14 @@
                     dataType: 'json',
                     timeout: 0,
                     success: function (data) {
+                        $('.card-block.exec-block').LoadingOverlay("hide")
+
                         submitBtn.removeAttr('disabled')
                         $('#results-container').html(data.visual)
                     },
                     error: function (err) {
+                        $('.card-block.exec-block').LoadingOverlay("hide")
+
                         submitBtn.removeAttr('disabled')
                         alert('An unexpected error occured')
                         console.log(err)
