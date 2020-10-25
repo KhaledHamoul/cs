@@ -90,10 +90,10 @@ def kmeans(args):
             'parallelCoord': parallelCoord,
             'parallelCentroids': parallelCentroids
         },
-        'data': {
-            'labeledDataset': labeledDataset.drop(['Constant'], axis=1).to_json(),
-            'centers': centers
-        },
+        # 'data': {
+        #     'labeledDataset': labeledDataset.drop(['Constant'], axis=1).to_json(),
+        #     'centers': centers
+        # },
         'indexes': indexes
     }
 

@@ -96,7 +96,7 @@
                             </div>
                             <div class="card-block">
                                 <div class="row">
-                                    <div class="ml-auto col-sm-12 text-center">
+                                    <div class="ml-auto col-sm-12 text-center" style="height: 90vh;">
                                         <div id="results-container"></div>
                                     </div>
                                 </div>
@@ -121,7 +121,6 @@
             const submitBtn = $(this)
             if ($('select[name=dataset]').val() && $('select[name=method]').val()) {
                 submitBtn.attr('disabled', 'disabled')
-                $('#results-container').html('<i class="fas fa-spinner fa-pulse"></i>')
 
                 $('.card-block.exec-block').LoadingOverlay("show")
 
@@ -138,16 +137,21 @@
                     timeout: 0,
                     success: function (data) {
                         $('.card-block.exec-block').LoadingOverlay("hide")
-
                         submitBtn.removeAttr('disabled')
-                        $('#results-container').html(data.visual)
+
+                        if (data.status) {
+                            $('#results-container').html(data.visual)
+                            toastr.success('Execution completed successfuly', {timeOut: 6000})
+                        } else {
+                            $('#results-container').html('')
+                            toastr.error(data.message, 'Execution Failed!')
+                        }
                     },
                     error: function (err) {
                         $('.card-block.exec-block').LoadingOverlay("hide")
 
                         submitBtn.removeAttr('disabled')
-                        alert('An unexpected error occured')
-                        console.log(err)
+                        toastr.error('Execution Failed!', 'Server Problem')
                     }
                 })
             } else alert('Please select options first')

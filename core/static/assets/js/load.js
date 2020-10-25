@@ -35,15 +35,18 @@ $('#load-dataset-btn').click(function () {
             processData: false,
             contentType: false,
             success: function (data) {
-                resetInputs()
-                toastr.success('Dataset loaded successfuly', {
-                    timeOut: 6000
-                })
+                if (data.status) {
+                    resetInputs()
+                    toastr.success('Dataset loaded successfuly', {timeOut: 6000})
+                } else {
+                    resetInputs()
+                    $('#visual').html(data.visual)
+                    toastr.error('', 'Some records are missing')
+                }
             },
             error: function (err) {
                 resetInputs()
-                $('#visual').html(err.responseJSON.visual)
-                toastr.error(err.responseJSON.message ?? '', 'Some records are missing')
+                toastr.error('Server Error')
             }
         });
     }

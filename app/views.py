@@ -7,7 +7,7 @@ from django.template.response import TemplateResponse
 from pprint import pprint
 from logging import warning
 from app.models import Dataset, Record, Attribute
-from api.models import Result
+from api.models import Result, ExecutionLog
 from django.db.models import Count
 import json
 
@@ -18,12 +18,15 @@ def index(request):
     records = Record.objects.count()
     attributes = Attribute.objects.count()
     results = Result.objects.count()
+    
+    logs = ExecutionLog.objects.order_by('-created_at').all()[0:20]
 
     params = {
         'datasets': datasets,
         'records': records,
         'attributes': attributes,
-        'results': results
+        'results': results,
+        'logs': logs
     }
 
     return render(request, "index.html", params)
@@ -212,9 +215,12 @@ def results_index(request):
 def results_view(request, id):
     try:
         result = Result.objects.get(id=id)
-        return render(request, "analysis/results/view.html", {'result': result})
+        indexes = json.loads(result.indexes)
+
+        return render(request, "analysis/results/view.html", {'result': result, 'indexes': indexes})
     except Result.DoesNotExist:
         print('Result #{id} does not exist !')
+        
         return redirect('results_index')
 
 # delete

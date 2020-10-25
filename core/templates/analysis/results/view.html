@@ -5,20 +5,19 @@
 <!-- Specific CSS goes HERE -->
 {% block stylesheets %}
 <style>
+    #result-visual {
+        opacity: 0;
+        height: 500px
+    }
 
-#result-visual {
-    opacity: 0; height: 500px
-}
+    .viewer-container.viewer-backdrop {
+        height: 500px !important;
+    }
 
-.viewer-container.viewer-backdrop {
-    height: 500px !important;
-}
-
-.viewer-container.viewer-backdrop.viewer-fixed {
-    height: auto !important;
-}
-
-</style> 
+    .viewer-container.viewer-backdrop.viewer-fixed {
+        height: auto !important;
+    }
+</style>
 {% endblock stylesheets %}
 
 {% block content %}
@@ -50,31 +49,99 @@
                     <div class="col-sm-12">
                         <div class="card">
                             <div class="card-header">
-                                <h5>Clustering</h5>
+                                <h5>Information</h5>
                             </div>
                             <div class="card-block">
                                 <div class="row">
                                     <div class="col-sm-12">
-                                        <div class="alert alert-info"><i class="fas fa-question-circle"></i> &nbsp;
-                                            <span id="algo-info"></span></div>
+                                        <div class="alert alert-info">
+                                            <div id="algo-info" class="mb-2"><a href="/data/view/{{result.dataset_id}}">View Dataset ></a></div>
+                                            <div id="algo-info"><b>{{ result.method }}</b></div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+                    {% comment %} indexes {% endcomment %}
+                    {% for key, index in indexes.items %}
+                    <div class="col-md-3">
+                        <div class="card">
+                            <div class="card-block border-bottom">
+                                <div class="row d-flex align-items-center">
+                                    <div class="col-auto">
+                                        <i class="feather icon-alert-circle f-30 text-c-green"></i>
+                                    </div>
+                                    <div class="col">
+                                        <h3 class="f-w-300" id="dbi">{{ index }}</h3>
+                                        <span class="d-block text-uppercase">{{ key }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% comment %} indexes {% endcomment %}
                     <div class="col-sm-12">
                         <div class="card">
                             <div class="card-header">
                                 <h5>Result</h5>
                                 <div class="btn-group btn-group-toggle float-right" data-toggle="buttons">
-                                    <button type="button" class="btn btn-secondary btn-lg active">Matplotlib</button>
-                                    <button type="button" class="btn btn-secondary btn-sm">D3</button>
+                                    <ul class="nav nav-tabs" id="myTab" role="tablist">
+                                        <li class="nav-item mr-1">
+                                            <a class="nav-link active" id="matplotlib-tab" data-target-tab="matplotlib"
+                                                data-toggle="tab" href="#matplotlib">Matplotlib</a>
+                                        </li>
+                                        <li class="nav-item mr-1">
+                                            <a class="nav-link" id="3d-pca-tab" data-target-tab="3d-pca"
+                                                data-toggle="tab" href="#3d-pca">3D
+                                                PCA</a>
+                                        </li>
+                                        <li class="nav-item mr-1">
+                                            <a class="nav-link" id="3d-tsne-tab" data-target-tab="3d-tsne"
+                                                data-toggle="tab" href="#3d-tsne">t-SNE</a>
+                                        </li>
+                                        <li class="nav-item mr-1">
+                                            <a class="nav-link" id="para-coord-tab" data-target-tab="para-coord"
+                                                data-toggle="tab" href="#para-coord">Parallel Coordinates</a>
+                                        </li>
+                                        <li class="nav-item mr-1">
+                                            <a class="nav-link" id="para-centroids-tab" data-target-tab="para-centroids"
+                                                data-toggle="tab" href="#para-centroids">Parallel Centroids</a>
+                                        </li>
+                                    </ul>
                                 </div>
                             </div>
                             <div class="card-block">
                                 <div class="row">
                                     <div class="ml-auto col-sm-12 text-center">
-                                        <div id="results-container">{{ result.visual | safe }}</div>
+                                        <div class="tab-content" id="myTabContent">
+                                            <div class="tab-pane show active" id="matplotlib" role="tabpanel">
+                                                <div id="visual-pca3d" style="height: 90vh;" data-viewer-set="false">
+                                                    {{ result.matplt_3d | safe }}
+                                                </div>
+                                            </div>
+                                            <div class="tab-pane" id="3d-pca" role="tabpanel">
+                                                <iframe id="3d_pca_iframe" src="/3d_pca"
+                                                    style="width: 100%; height: 90vh; border: none;"></iframe>
+                                            </div>
+                                            <div class="tab-pane" id="3d-tsne" role="tabpanel">
+                                                <iframe id="3d_tsne_iframe" src="/3d_tsne"
+                                                    style="width: 100%; height: 90vh; border: none;"></iframe>
+                                            </div>
+                                            <div class="tab-pane" id="para-coord" role="tabpanel">
+                                                <div id="visual-parallelCoord" style="height: 90vh;"
+                                                    data-viewer-set="false">
+                                                    {{ result.parallel_coord | safe }}
+                                                </div>
+                                            </div>
+                                            <div class="tab-pane" id="para-centroids" role="tabpanel">
+                                                <div id="visual-parallelCentroids" style="height: 90vh;"
+                                                    data-viewer-set="false">
+                                                    {{ result.parallel_centroids | safe }}
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -92,15 +159,26 @@
 <!-- Specific Page JS goes HERE  -->
 {% block javascripts %}
 <script>
-    setImageViewer()
+    setTimeout(() => {
+        setImageViewer('#visual-pca3d img')
+    }, 1000);
 
-    // TOOD : copy it to a general place 
-    function setImageViewer() {
-        const viewer = new Viewer($('#results-container img')[0], {
+    $('#myTab .nav-link').bind('click', e => {
+        let selector = '#' + $(e.target).data('target-tab') + ' > div';
+        if ($(selector) != undefined && $(selector).attr('data-viewer-set') == 'false' && $(selector).html() !=
+            '') {
+            $(selector).attr('data-viewer-set', true)
+            setImageViewer(selector + ' img')
+        }
+    })
+
+    // private 
+    function setImageViewer(selector) {
+        new Viewer($(selector)[0], {
             inline: true,
-            viewed() {
-                viewer.zoomTo(0.2);
-            },
+            // viewed() {
+            //    viewer.zoomTo(0.2);
+            // },
             toolbar: {
                 zoomIn: 4,
                 zoomOut: 4,

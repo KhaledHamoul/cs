@@ -95,42 +95,32 @@
                                                 <th>Dataset</th>
                                                 <th>Algorithm</th>
                                                 <th>Time</th>
+                                                <th>Executed At</th>
                                                 <th class="text-right"></th>
                                                 <th>Status</th>
                                             </tr>
                                         </thead>
                                         <tbody>
+                                            {% for log in logs %}
                                             <tr>
                                                 <td>
-                                                    <h6 class="m-0"><i class="feather icon-search f-15 text-c-black"></i> Ida Jorgensen</h6>
+                                                    <h6 class="m-0"><a href="/data/view/{{log.dataset.id}}">{{ log.dataset.title }}</a></h6>
                                                 </td>
                                                 <td>
-                                                    <h6 class="m-0">The quick brown fox</h6>
+                                                    <h6 class="m-0">{{ log.method }}</h6>
                                                 </td>
                                                 <td>
-                                                    <h6 class="m-0">3:28 PM</h6>
+                                                    <h6 class="m-0">{{ log.exec_time }}</h6>
                                                 </td>
-                                                <td class="text-right"><i class="fas fa-circle text-c-green f-10"></i></td>
                                                 <td>
-                                                    <h6 class="m-0 text-c-green">Done</h6>
+                                                    <h6 class="m-0">{{ log.created_at }}</h6>
+                                                </td>
+                                                <td class="text-right"><i class="fas fa-circle text-c-{% if log.status is True %}green{% else %}red{% endif %} f-10"></i></td>
+                                                <td>
+                                                    <h6 class="m-0 text-c-{% if log.status is True %}green{% else %}red{% endif %}">{% if log.status is True %} Success {% else %} Failed {% endif %}</h6>
                                                 </td>
                                             </tr>
-
-                                            <tr>
-                                                <td>
-                                                    <h6 class="m-0"><i class="feather icon-search f-15 text-c-black"></i> Albert Andersen</h6>
-                                                </td>
-                                                <td>
-                                                    <h6 class="m-0">Jumps over the lazy</h6>
-                                                </td>
-                                                <td>
-                                                    <h6 class="m-0">2:37 PM</h6>
-                                                </td>
-                                                <td class="text-right"><i class="fas fa-circle text-c-red f-10"></i></td>
-                                                <td>
-                                                    <h6 class="m-0 text-c-red">Missed</h6>
-                                                </td>
-                                            </tr>
+                                            {% endfor %}
                                         </tbody>
                                     </table>
                                 </div>

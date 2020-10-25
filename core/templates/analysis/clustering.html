@@ -93,7 +93,7 @@
                                         <div class="form-group">
                                             <label for="samplingPoints">Sampling Points</label>
                                             <input type="number" name="samplingPoints" class="form-control" min="1"
-                                                max="6" value="100">
+                                                max="6" value="30">
                                         </div>
                                     </div>
                                     <div class="col-sm-2" style="display: none">
@@ -201,24 +201,25 @@
                                 <div class="btn-group btn-group-toggle float-right" data-toggle="buttons">
                                     <ul class="nav nav-tabs" id="myTab" role="tablist">
                                         <li class="nav-item mr-1">
-                                            <a class="nav-link active" id="matplotlib-tab" data-toggle="tab"
-                                                href="#matplotlib">Matplotlib</a>
+                                            <a class="nav-link active" id="matplotlib-tab" data-target-tab="matplotlib"
+                                                data-toggle="tab" href="#matplotlib">Matplotlib</a>
                                         </li>
                                         <li class="nav-item mr-1">
-                                            <a class="nav-link" id="3d-pca-tab" data-toggle="tab" href="#3d-pca">3D
+                                            <a class="nav-link" id="3d-pca-tab" data-target-tab="3d-pca"
+                                                data-toggle="tab" href="#3d-pca">3D
                                                 PCA</a>
                                         </li>
                                         <li class="nav-item mr-1">
-                                            <a class="nav-link" id="3d-tsne-tab" data-toggle="tab"
-                                                href="#3d-tsne">t-SNE</a>
+                                            <a class="nav-link" id="3d-tsne-tab" data-target-tab="3d-tsne"
+                                                data-toggle="tab" href="#3d-tsne">t-SNE</a>
                                         </li>
                                         <li class="nav-item mr-1">
-                                            <a class="nav-link" id="para-coord-tab" data-toggle="tab"
-                                                href="#para-coord">Parallel Coordinates</a>
+                                            <a class="nav-link" id="para-coord-tab" data-target-tab="para-coord"
+                                                data-toggle="tab" href="#para-coord">Parallel Coordinates</a>
                                         </li>
                                         <li class="nav-item mr-1">
-                                            <a class="nav-link" id="para-centroids-tab" data-toggle="tab"
-                                                href="#para-centroids">Parallel Centroids</a>
+                                            <a class="nav-link" id="para-centroids-tab" data-target-tab="para-centroids"
+                                                data-toggle="tab" href="#para-centroids">Parallel Centroids</a>
                                         </li>
                                     </ul>
                                 </div>
@@ -228,7 +229,8 @@
                                     <div class="ml-auto col-sm-12 text-center">
                                         <div class="tab-content" id="myTabContent">
                                             <div class="tab-pane show active" id="matplotlib" role="tabpanel">
-                                                <div id="visual-pca3d" style="height: 90vh;"></div>
+                                                <div id="visual-pca3d" style="height: 90vh;" data-viewer-set="false">
+                                                </div>
                                             </div>
                                             <div class="tab-pane" id="3d-pca" role="tabpanel">
                                                 <iframe id="3d_pca_iframe" src=""
@@ -239,12 +241,12 @@
                                                     style="width: 100%; height: 90vh; border: none;"></iframe>
                                             </div>
                                             <div class="tab-pane" id="para-coord" role="tabpanel">
-                                                coord
-                                                <div id="visual-parallelCoord" style="height: 90vh;"></div>
+                                                <div id="visual-parallelCoord" style="height: 90vh;"
+                                                    data-viewer-set="false"></div>
                                             </div>
                                             <div class="tab-pane" id="para-centroids" role="tabpanel">
-                                                centroids
-                                                <div id="visual-parallelCentroids" style="height: 90vh;"></div>
+                                                <div id="visual-parallelCentroids" style="height: 90vh;"
+                                                    data-viewer-set="false"></div>
                                             </div>
                                         </div>
                                     </div>
@@ -276,6 +278,9 @@
                 $('#cs').html(0)
                 $('#ss').html(0)
                 $('#dbi').html(0)
+                $('#myTabContent .tab-pane > div').attr('data-viewer-set', false).html('')
+                $('.viewer-container.viewer-backdrop').remove()
+                $('#myTabContent .tab-pane > ifram').attr('src', '#')
 
                 $('.card-block.exec-block').LoadingOverlay("show")
 
@@ -294,31 +299,40 @@
                     timeout: 0,
                     success: function (data) {
                         $('.card-block.exec-block').LoadingOverlay("hide")
-
-
                         submitBtn.removeAttr('disabled')
-                        $('.save-btn').removeAttr('disabled')
-                        
-                        // indexes
-                        $('#di').html(data.indexes.di)
-                        $('#cs').html(data.indexes.cs)
-                        $('#ss').html(data.indexes.ss)
-                        $('#dbi').html(data.indexes.dbs)
-                        // 3d plots
-                        $('#3d_pca_iframe').attr('src', '/3d_pca')
-                        $('#3d_tsne_iframe').attr('src', '/3d_tsne')
 
-                        Object.entries(data.visuals).map(([key, value]) => ({key,value})).forEach(item => {
-                            $('#visual-' + item.key).html(item.value);
-                            console.log('#visual-' + item.key + ' img');
-                            setImageViewer('#visual-' + item.key + ' img') 
-                        });
+                        if (data.status) {
+                            $('.save-btn').removeAttr('disabled')
 
-                        window.result = data
+                            // indexes
+                            $('#di').html(data.indexes.di)
+                            $('#cs').html(data.indexes.cs)
+                            $('#ss').html(data.indexes.ss)
+                            $('#dbi').html(data.indexes.dbs)
+                            // 3d plots
+                            $('#3d_pca_iframe').attr('src', '/3d_pca')
+                            $('#3d_tsne_iframe').attr('src', '/3d_tsne')
+
+                            Object.entries(data.visuals).map(([key, value]) => ({ key, value })).forEach(item => {
+                                $('#visual-' + item.key).html(item.value);
+                                $('#visual-' + item.key).closest('.tab-pane').each((i, parentItem) => {
+                                    if ($(parentItem).hasClass('active') || $(parentItem).hasClass('show')) {
+                                        $('#visual-' + item.key).attr('data-viewer-set', true)
+                                        setImageViewer('#visual-' + item.key + ' img');
+                                    }
+                                })
+
+                            });
+
+                            window.result = data
+                            toastr.success('Execution completed successfuly', { timeOut: 6000 })
+                        } else {
+                            toastr.error(data.message, 'Execution Failed!')
+                        }
                     },
                     error: function (err) {
                         submitBtn.removeAttr('disabled')
-                        alert('An unexpected error occured')
+                        toastr.error('Server Error', 'Execution Failed!')
                         console.log(err)
                     }
                 })
@@ -333,7 +347,12 @@
             $.ajax({
                 url: '/api/analysis/save-result',
                 method: 'POST',
-                data: window.result,
+                data: {
+                    datasetId: window.result.datasetId,
+                    method: window.result.method,
+                    indexes: JSON.stringify(window.result.indexes),
+                    ...window.result.visuals
+                },
                 dataType: 'json',
                 timeout: 0,
                 success: function (data) {
@@ -356,6 +375,14 @@
 
             if (op.val() != 'hierarchical') $('[name=linkageMethod]').attr('disabled', 'disabled')
             else $('[name=linkageMethod]').removeAttr('disabled')
+        })
+
+        $('#myTab .nav-link').bind('click', e => {
+            let selector = '#' + $(e.target).data('target-tab') + ' > div';
+            if ($(selector) != undefined && $(selector).attr('data-viewer-set') == 'false' && $(selector).html() != '') {
+                $(selector).attr('data-viewer-set', true)
+                setImageViewer(selector + ' img')
+            }
         })
     });
 
