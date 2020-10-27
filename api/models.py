@@ -19,6 +19,7 @@ class ExecutionLog(models.Model):
     method = models.CharField(max_length=60)
     exec_time = models.TextField()
     status = models.BooleanField()
+    error = models.TextField(default="")
     created_at = models.DateTimeField(auto_now_add=True)
     # foreign keys
     dataset = models.ForeignKey(Dataset, on_delete=models.CASCADE, null=True)

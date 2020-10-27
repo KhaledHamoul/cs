@@ -1,0 +1,126 @@
+{% extends "layouts/base.html" %}
+{% load template_filters %}
+
+
+{% block title %} Clone Dataset {% endblock %}
+
+<!-- Specific CSS goes HERE -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+<div class="pcoded-content">
+    <div class="pcoded-inner-content">
+        <!-- [ breadcrumb ] start -->
+        <div class="page-header">
+            <div class="page-block">
+                <div class="row align-items-center">
+                    <div class="col-md-12">
+                        <div class="page-header-title">
+                            <h5 class="m-b-10"></h5>
+                        </div>
+                        <ul class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="/"><i class="feather icon-home"></i></a></li>
+                            <li class="breadcrumb-item"><a href="javascript:">Datasets</a></li>
+                            <li class="breadcrumb-item"><a href="javascript:">Clone dataset</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="main-body">
+            <div class="page-wrapper">
+                <div class="row">
+                    <div class="col-xl-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>Dataset</h5>
+                                <button class="btn btn-success mb-3 float-right" id="clone-dataset-btn">Clone</button>
+                                <div class="row mt-5">
+                                    <div class="col-md-12 mb-4">
+                                        <span><a href="/data/view/{{ dataset.id }}">{{ dataset.title }}</a></span>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label>Name</label>
+                                        <input type="text" name="dataset_name" class="form-control">
+                                    </div>
+                                    <div class="col-md-9 pl-5">
+                                        <label>Description</label>
+                                        <input type="text" name="dataset_description" class="form-control">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-block table-border-style">
+                                <h5>Attributes <span><a href="#" id="select-all"><small>All <i
+                                                    class="fas fa-check"></i></small></a></span></h5>
+                                <div class="row mt-4">
+                                    {% for attribute in dataset.attributes.all %}
+                                    <div class="col-md-3 mb-2">
+                                        <input type="checkbox" class="mr-2 attribute-checkbox" name="{{ attribute.id }}"
+                                            style="cursor: pointer" />
+                                        {{ attribute|get_item:'label' }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+<script>
+    $(function () {
+        var selected = false
+        $('#select-all').on('click', e => {
+            e.preventDefault();
+            selected = !selected
+            $('.attribute-checkbox').prop("checked", selected);
+        })
+
+        $('#clone-dataset-btn').click(function () {
+            if ($('input[name=dataset_name]').val() != '') {
+                console.log('fuck')
+
+                $('#clone-dataset-btn').attr('disabled', 'disabled')
+
+                var formData = new FormData();
+                formData.append('dataset_name', $('input[name=dataset_name]').val())
+                if ($('input[name=dataset_description]').val() != '') {
+                    formData.append('dataset_description', $('input[name=dataset_description]').val())
+                }
+
+                // TODO add a loop to set all the selected attributes and add the api backend endpoint to handle it 
+
+                $.ajax({
+                    url: '/api/dataset/clone',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (data) {
+                        if (data.status) {
+                            toastr.success('Dataset cloned successfuly', {
+                                timeOut: 6000
+                            })
+
+                            window.location = '/data/index'
+                        }
+                    },
+                    error: function (err) {
+                        $('#clone-dataset-btn').removeAttr('disabled')
+                        toastr.error('Server Error')
+                    }
+                });
+            }
+        })
+    });
+</script>
+
+{% endblock javascripts %}

@@ -112,6 +112,15 @@ def data_delete(request, id):
 
     return redirect('data_index')
 
+@login_required(login_url="/login/")
+def data_clone(request, id):
+    try:
+        dataset = Dataset.objects.get(id=id)
+        return render(request, "data/clone.html", {'dataset': dataset, 'fields': ['name', 'label', 'description', 'attribute_type']})
+    except Dataset.DoesNotExist:
+        print('Dataset #{id} does not exist !')
+        return redirect('data_index')
+
 
 @login_required(login_url="/login/")
 def optimum_clusters_number(request):
@@ -137,48 +146,50 @@ def optimum_clusters_number(request):
 
 @login_required(login_url="/login/")
 def clustering(request):
+    from django.template.loader import render_to_string
+
     datasets = Dataset.objects.annotate(
         records_count=Count("records")).filter(deleted=False)
     algorithms = [
         {
             "label": 'K-Means',
             "method": 'kmeans',
-            "info": "k-means lorem ipsum"
+            "info": render_to_string('methods_info/kmeans.html')
         },
         {
             "label": 'MiniBatch K-Means',
             "method": 'mini_batch_kmeans',
-            "info": "MiniBatch k-means lorem ipsum"
+            "info": render_to_string('methods_info/mini_batch_kmeans.html')
         },
         {
             "label": 'Birch',
             "method": 'birch',
-            "info": "MiniBatch k-means lorem ipsum"
+            "info": render_to_string('methods_info/birch.html')
         },
         {
             "label": 'Hierarchical',
             "method": 'hierarchical',
-            "info": "Hirarchical lorem ipsum"
+            "info": render_to_string('methods_info/hierarchical.html')
         },
         {
             "label": 'Spectral',
             "method": 'spectral',
-            "info": "Spectral lorem ipsum"
+            "info": render_to_string('methods_info/spectral.html')
         },
         {
             "label": 'MeanShift',
             "method": 'mean_shift',
-            "info": "MiniBatch k-means lorem ipsum"
+            "info": render_to_string('methods_info/mean_shift.html')
         },
         {
             "label": 'DBSCAN',
             "method": 'dbscan',
-            "info": "MiniBatch k-means lorem ipsum"
+            "info": render_to_string('methods_info/dbscan.html')
         },
         {
             "label": 'OPTICS',
             "method": 'optics',
-            "info": "MiniBatch k-means lorem ipsum"
+            "info": render_to_string('methods_info/optics.html')
         }
     ]
 
@@ -220,7 +231,7 @@ def results_view(request, id):
         return render(request, "analysis/results/view.html", {'result': result, 'indexes': indexes})
     except Result.DoesNotExist:
         print('Result #{id} does not exist !')
-        
+
         return redirect('results_index')
 
 # delete

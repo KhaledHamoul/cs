@@ -14,7 +14,7 @@ from sklearn.feature_extraction.image import grid_to_graph
 import matplotlib
 import seaborn as sns
 from math import ceil
-
+from sklearn.neighbors import NearestCentroid
 from distutils.version import LooseVersion
 from scipy.ndimage.filters import gaussian_filter
 from scipy import sparse
@@ -30,6 +30,8 @@ matplotlib.use('Agg')
 
 
 def kmeans(args):
+    print('==== K-Means ====')
+
     clustersNumber = int(args.get('clustersNumber'))
     datasetDf = args.get('datasetDf')
     samplingPoints = args.get('samplingPoints')
@@ -39,243 +41,143 @@ def kmeans(args):
 
     labels = algoResult.labels_
 
-    centers = model.cluster_centers_
-    centers = json.dumps(centers.tolist())
+    result = prepareResult(datasetDf=datasetDf, algoResult=algoResult, model=model,
+                           labels=labels, clustersNumber=clustersNumber, samplingPoints=samplingPoints)
 
-    # remove some features
-    # datasetDf = datasetDf.drop(['Age'],axis=1)
-    # visual, labeledDataset = variablesSprendingPlot(
-    #     model, datasetDf, plotingColumns)
-
-    from api.helpers import plotPca3d, parallelCoordinates, displayParallelCoordinatesCentroids, tsne, getPltImage, indexes
-    samplingPoints = int(samplingPoints) if samplingPoints != '' else None
-
-    # 3d PCA plot
-    plt1 = plotPca3d(datasetDf=datasetDf, labels=labels,
-                     sample_points=samplingPoints)
-    visual = '<div class="col-sm-12">' + getPltImage(plt1) + '</div>'
-    pca3d = '<div class="row">' + visual + '</div>'
-
-    # Parallel coordinates plot
-    plt2 = parallelCoordinates(
-        datasetDf=datasetDf, labels=labels, num_clusters=clustersNumber)
-    visual = '<div class="col-sm-12">' + getPltImage(plt2) + '</div>'
-    parallelCoord = '<div class="row">' + visual + '</div>'
-
-    # parallel cooridnates centoirds plot
-    centroids = pd.DataFrame(algoResult.cluster_centers_)
-    centroids['cluster'] = centroids.index
-    plt3 = displayParallelCoordinatesCentroids(
-        centroids, num_clusters=clustersNumber)
-    visual = '<div class="col-sm-12">' + getPltImage(plt3) + '</div>'
-    parallelCentroids = '<div class="row">' + visual + '</div>'
-
-    # t-SNE plot
-    tsne(datasetDf=datasetDf, labels=labels, sample_points=samplingPoints)
-
-    plt.close("all")
-
-    labels = pd.DataFrame(model.labels_)
-    labeledDataset = pd.concat((datasetDf, labels), axis=1)
-    labeledDataset = labeledDataset.rename({0: 'labels'}, axis=1)
-
-    labeledDataset['Constant'] = "Data"
-
-    indexes = indexes(datasetDf=datasetDf,
-                      labels=algoResult.labels_, num_clusters=clustersNumber)
-
-    return {
-        'visuals': {
-            'pca3d': pca3d,
-            'parallelCoord': parallelCoord,
-            'parallelCentroids': parallelCentroids
-        },
-        # 'data': {
-        #     'labeledDataset': labeledDataset.drop(['Constant'], axis=1).to_json(),
-        #     'centers': centers
-        # },
-        'indexes': indexes
-    }
+    return result
 
 
 def hierarchical(args):
-    print('hierarchical')
+    print('==== Hierarchical ====')
+
     clustersNumber = int(args.get('clustersNumber'))
     datasetDf = args.get('datasetDf')
-    plotingColumns = int(args.get('plotingColumns'))
-    linkageMethod = args.get('linkageMethod')
+    samplingPoints = args.get('samplingPoints')
 
-    # normalization
-    # if (True):
-    #     scaler = preprocessing.MinMaxScaler()
-    #     datasetDf = scaler.fit_transform(datasetDf)
+    model = AgglomerativeClustering(n_clusters=clustersNumber, affinity='euclidean')
+    algoResult = model.fit(datasetDf)
 
-    # D = pairwise_distances(datasetDf)
-    # print('=========')
-    # print(max(map(max, D)))
-    # print('=========')
+    labels = algoResult.labels_
 
-    model = AgglomerativeClustering(
-        n_clusters=clustersNumber, affinity='euclidean', linkage=linkageMethod)
-    model.fit_predict(datasetDf)
+    result = prepareResult(datasetDf=datasetDf, algoResult=algoResult, model=model,
+                           labels=labels, clustersNumber=clustersNumber, samplingPoints=samplingPoints)
 
-    labels = pd.DataFrame(model.labels_)
-    labeledDataset = pd.concat(
-        (datasetDf, labels), axis=1).rename({0: 'labels'}, axis=1)
-
-    linked = linkage(datasetDf, linkageMethod)
-    # print(linked)
-    # print(max(map(max, linked)))
-
-    matplotlib.rcParams['lines.linewidth'] = 4
-
-    plt.figure(figsize=(100, 60))
-    plt.grid()
-    plt.yticks(fontsize=50)
-    fancy_dendrogram(linked,
-                     orientation='top',
-                     distance_sort='descending',
-                     truncate_mode='lastp',  # show only the last p merged clusters
-                     p=clustersNumber,  # show only the last p merged clusters
-                     color_threshold=0.1*2,
-                     leaf_rotation=90.,
-                     leaf_font_size=60.,
-                     show_contracted=True,
-                     annotate_above=1,
-                     max_d=1)
-
-    # avoid circular imports (error)
-    from api.helpers import getPltImage
-
-    dendrogram = '<div class="col-sm-12">' + getPltImage(plt) + '</div>'
-    dendrogram = '<div class="row">' + dendrogram + '</div>'
-
-    # visual, labeledDataset = variablesSprendingPlot(model, datasetDf, plotingColumns)
-
-    visual = dendrogram
-
-    # return {'visual': visual, 'data': {'labeledDataset': labeledDataset.drop(['Constant'],axis=1).to_json()}}
-    return {'visual': visual, 'data': {'labeledDataset': 100}}
+    return result
 
 
 def spectral(args):
-    print('spectral')
+    print('==== spectral ====')
+
     clustersNumber = int(args.get('clustersNumber'))
     datasetDf = args.get('datasetDf')
-    plotingColumns = int(args.get('plotingColumns'))
+    samplingPoints = args.get('samplingPoints')
 
-    D = pairwise_distances(datasetDf)  # Distance matrix
-    print('=========')
-    print(D)
-    print('=========')
-    S = np.max(D) - D  # Similarity matrix
-    print('=========')
-    print(S)
-    print('=========')
-    S = sparse.coo_matrix(S)
-    print('=========')
-    print(S)
-    print('=========')
+    # D = pairwise_distances(datasetDf)  # Distance matrix
+    # S = np.max(D) - D  # Similarity matrix
+    # S = sparse.coo_matrix(S)
 
     model = SpectralClustering(
         n_clusters=clustersNumber, affinity='precomputed')
-    model.fit(S)
 
-    visual, labeledDataset = variablesSprendingPlot(
-        model, datasetDf, plotingColumns)
+    model = KMeans(n_clusters=clustersNumber)
+    algoResult = model.fit(datasetDf)
 
-    return {'visual': visual, 'data': {'labeledDataset': labeledDataset.drop(['Constant'], axis=1).to_json()}}
+    labels = algoResult.labels_
+
+    result = prepareResult(datasetDf=datasetDf, algoResult=algoResult, model=model,
+                           labels=labels, clustersNumber=clustersNumber, samplingPoints=samplingPoints)
+
+    return result
 
 
 def mini_batch_kmeans(args):
-    print('mini batch kmeans')
+    print('==== MiniBatch K-Means ====')
+
     clustersNumber = int(args.get('clustersNumber'))
     datasetDf = args.get('datasetDf')
-    plotingColumns = int(args.get('plotingColumns'))
+    samplingPoints = args.get('samplingPoints')
 
     model = MiniBatchKMeans(n_clusters=clustersNumber)
-    model.fit(datasetDf)
+    algoResult = model.fit(datasetDf)
 
-    centers = model.cluster_centers_
-    centers = json.dumps(centers.tolist())
+    labels = algoResult.labels_
 
-    # remove some features
-    # datasetDf = datasetDf.drop(['Age'],axis=1)=
-    visual, labeledDataset = variablesSprendingPlot(
-        model, datasetDf, plotingColumns)
+    result = prepareResult(datasetDf=datasetDf, algoResult=algoResult, model=model,
+                           labels=labels, clustersNumber=clustersNumber, samplingPoints=samplingPoints)
 
-    return {'visual': visual, 'data': {'labeledDataset': labeledDataset.drop(['Constant'], axis=1).to_json(), 'centers': centers}}
+    return result
 
 
 def birch(args):
-    print('birch')
+    print('==== MiniBatch K-Means ====')
+
     clustersNumber = int(args.get('clustersNumber'))
     datasetDf = args.get('datasetDf')
-    plotingColumns = int(args.get('plotingColumns'))
+    samplingPoints = args.get('samplingPoints')
 
     model = Birch(n_clusters=clustersNumber)
-    model.fit(datasetDf)
+    algoResult = model.fit(datasetDf)
 
-    # remove some features
-    # datasetDf = datasetDf.drop(['Age'],axis=1)
-    visual, labeledDataset = variablesSprendingPlot(
-        model, datasetDf, plotingColumns)
+    labels = algoResult.labels_
 
-    return {'visual': visual, 'data': {'labeledDataset': labeledDataset.drop(['Constant'], axis=1).to_json()}}
+    result = prepareResult(datasetDf=datasetDf, algoResult=algoResult, model=model,
+                           labels=labels, clustersNumber=clustersNumber, samplingPoints=samplingPoints)
+
+    return result
 
 
-def mean_shift(args):
-    print('mean shift')
+def mean_shift(args):        
+    print('==== Mean Shift ====')
+
     clustersNumber = int(args.get('clustersNumber'))
     datasetDf = args.get('datasetDf')
-    plotingColumns = int(args.get('plotingColumns'))
+    samplingPoints = args.get('samplingPoints')
 
     model = MeanShift()
-    model.fit(datasetDf)
+    algoResult = model.fit(datasetDf)
 
-    # centers = model.cluster_centers_
-    # centers = json.dumps(centers.tolist())
+    labels = algoResult.labels_
 
-    # remove some features
-    # datasetDf = datasetDf.drop(['Age'],axis=1)
-    visual, labeledDataset = variablesSprendingPlot(
-        model, datasetDf, plotingColumns)
+    result = prepareResult(datasetDf=datasetDf, algoResult=algoResult, model=model,
+                           labels=labels, clustersNumber=clustersNumber, samplingPoints=samplingPoints)
 
-    return {'visual': visual, 'data': {'labeledDataset': labeledDataset.drop(['Constant'], axis=1).to_json()}}
+    return result
 
 
-def dbscan(args):
-    print('dbscan')
+def dbscan(args):    
+    print('==== DBSCAN ====')
+
     clustersNumber = int(args.get('clustersNumber'))
     datasetDf = args.get('datasetDf')
-    plotingColumns = int(args.get('plotingColumns'))
+    samplingPoints = args.get('samplingPoints')
 
     model = DBSCAN()
-    model.fit(datasetDf)
+    algoResult = model.fit(datasetDf)
 
-    # remove some features
-    # datasetDf = datasetDf.drop(['Age'],axis=1)
-    visual, labeledDataset = variablesSprendingPlot(
-        model, datasetDf, plotingColumns)
+    labels = algoResult.labels_
 
-    return {'visual': visual, 'data': {'labeledDataset': labeledDataset.drop(['Constant'], axis=1).to_json()}}
+    result = prepareResult(datasetDf=datasetDf, algoResult=algoResult, model=model,
+                           labels=labels, clustersNumber=clustersNumber, samplingPoints=samplingPoints)
+
+    return result
 
 
 def optics(args):
-    print('optics')
+    print('==== OPTICS ====')
+
     clustersNumber = int(args.get('clustersNumber'))
     datasetDf = args.get('datasetDf')
-    plotingColumns = int(args.get('plotingColumns'))
+    samplingPoints = args.get('samplingPoints')
 
     model = OPTICS()
-    model.fit(datasetDf)
+    algoResult = model.fit(datasetDf)
 
-    # remove some features
-    # datasetDf = datasetDf.drop(['Age'],axis=1)
-    visual, labeledDataset = variablesSprendingPlot(
-        model, datasetDf, plotingColumns)
+    labels = algoResult.labels_
 
-    return {'visual': visual, 'data': {'labeledDataset': labeledDataset.drop(['Constant'], axis=1).to_json()}}
+    result = prepareResult(datasetDf=datasetDf, algoResult=algoResult, model=model,
+                           labels=labels, clustersNumber=clustersNumber, samplingPoints=samplingPoints)
+
+    return result
 
 
 # private
@@ -318,6 +220,67 @@ def variablesSprendingPlot(model, datasetDf, plotingColumns):
     plt.close("all")
 
     return visual, labeledDataset
+
+
+def prepareResult(datasetDf, algoResult, model, labels, clustersNumber, samplingPoints):
+    from api.helpers import plotPca3d, parallelCoordinates, displayParallelCoordinatesCentroids, tsne, getPltImage, indexes
+    samplingPoints = int(samplingPoints) if samplingPoints != '' else None
+
+    # 3d PCA plot
+    plt1 = plotPca3d(datasetDf=datasetDf, labels=labels,
+                     sample_points=samplingPoints)
+    visual = '<div class="col-sm-12">' + getPltImage(plt1) + '</div>'
+    pca3d = '<div class="row">' + visual + '</div>'
+
+    # Parallel coordinates plot
+    plt2 = parallelCoordinates(
+        datasetDf=datasetDf, labels=labels, num_clusters=clustersNumber)
+    visual = '<div class="col-sm-12">' + getPltImage(plt2) + '</div>'
+    parallelCoord = '<div class="row">' + visual + '</div>'
+
+    # parallel cooridnates centoirds plot
+    try:
+        centroids = pd.DataFrame(algoResult.cluster_centers_)
+        pass
+    except Exception as e:
+        clf = NearestCentroid()
+        clf.fit(datasetDf, labels)
+        centroids = pd.DataFrame(clf.centroids_)
+        print(e)
+        pass
+
+    centroids['cluster'] = centroids.index
+    plt3 = displayParallelCoordinatesCentroids(
+        centroids, num_clusters=clustersNumber)
+    visual = '<div class="col-sm-12">' + getPltImage(plt3) + '</div>'
+    parallelCentroids = '<div class="row">' + visual + '</div>'
+
+    # t-SNE plot
+    tsne(datasetDf=datasetDf, labels=labels, sample_points=samplingPoints)
+
+    plt.close("all")
+
+    labels = pd.DataFrame(model.labels_)
+    labeledDataset = pd.concat((datasetDf, labels), axis=1)
+    labeledDataset = labeledDataset.rename({0: 'labels'}, axis=1)
+
+    labeledDataset['Constant'] = "Data"
+
+    indexes = indexes(datasetDf=datasetDf,
+                      labels=algoResult.labels_, num_clusters=clustersNumber)
+
+    return {
+        'visuals': {
+            'pca3d': pca3d,
+            'parallelCoord': parallelCoord,
+            'parallelCentroids': parallelCentroids
+        },
+        # 'data': {
+        #     'labeledDataset': labeledDataset.drop(['Constant'], axis=1).to_json(),
+        #     'centers': centers
+        # },
+        'indexes': indexes
+    }
 
 
 def fancy_dendrogram(*args, **kwargs):

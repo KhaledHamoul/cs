@@ -11,6 +11,7 @@ urlpatterns = [
     path('data/view/<int:id>', views.data_view, name='data_view'),
     path('data/update/<int:id>', views.data_update, name='data_update'),
     path('data/delete/<int:id>', views.data_delete, name='data_delete'),
+    path('data/clone/<int:id>', views.data_clone, name='data_clone'),
 
     # analysis urls
     path('analysis/optimum_clusters_number', views.optimum_clusters_number, name='optimum_clusters_number'),

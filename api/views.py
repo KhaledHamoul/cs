@@ -94,7 +94,58 @@ def upload_dataset(request):
         pass
 
     executionTime = "{:.4f}".format(time.time() - start_time)
-    execLog = ExecutionLog(method='Dataset Uploading', dataset_id=(dataset.id if executionStatus else None),
+    execLog = ExecutionLog(method='Dataset Uploading', dataset_id=(dataset.id if executionStatus else None), error=('' if executionStatus else result['message']),
+                           exec_time=executionTime, status=executionStatus)
+    execLog.save()
+
+    result['status'] = executionStatus
+
+    return JsonResponse(result)
+
+@csrf_exempt
+def clone_dataset(request):
+    start_time = time.time()
+
+    result = {}
+    executionStatus = True
+    try:
+        datasetId = request.POST.get('datasetId')
+        datasetName = request.POST.get('dataset_name')
+        datasetDescription = request.POST.get('dataset_description') if request.POST.get(
+            'dataset_description') != None else ''
+        allowMissinValues = request.POST.get('Allow_missing_values')
+
+
+        # create the dataset
+        dataset = Dataset(title=datasetName, description=datasetDescription)
+        dataset.save()
+
+        # save the attributes
+        for attributeName in attributes:
+            try:
+                attributeInstance = Attribute.objects.get(name=attributeName)
+            except Attribute.DoesNotExist:
+                attributeInstance = Attribute(
+                    name=attributeName, label=attributeName)
+                attributeInstance.save()
+
+            dataset.attributes.add(attributeInstance)
+
+        # save the records
+        for data in records:
+            record = Record(data=data)
+            record.save()
+            dataset.records.add(record)
+
+        result['attributes'] = attributes
+        result['records_count'] = len(records)
+    except Exception as e:
+        executionStatus = False
+        result['message'] = str(e)
+        pass
+
+    executionTime = "{:.4f}".format(time.time() - start_time)
+    execLog = ExecutionLog(method='Dataset Uploading', dataset_id=(dataset.id if executionStatus else None), error=('' if executionStatus else result['message']),
                            exec_time=executionTime, status=executionStatus)
     execLog.save()
 
@@ -134,7 +185,7 @@ def optimum_clusters_number(request):
         pass
 
     executionTime = "{:.4f}".format(time.time() - start_time)
-    execLog = ExecutionLog(method=method, dataset_id=datasetId,
+    execLog = ExecutionLog(method=method, dataset_id=datasetId, error=('' if executionStatus else result['message']),
                            exec_time=executionTime, status=executionStatus)
     execLog.save()
 
@@ -203,7 +254,7 @@ def clustering(request):
         pass
 
     executionTime = "{:.4f}".format(time.time() - start_time)
-    execLog = ExecutionLog(method=method, dataset_id=datasetId,
+    execLog = ExecutionLog(method=method, dataset_id=datasetId, error=('' if executionStatus else result['message']),
                            exec_time=executionTime, status=executionStatus)
     execLog.save()
 
@@ -220,18 +271,18 @@ def save_result(request):
     pca3d = request.POST.get('pca3d')
     parallelCoord = request.POST.get('parallelCoord')
     parallelCentroids = request.POST.get('parallelCentroids')
-    
+
     try:
         result = Result(
-                            dataset_id=datasetId,
-                            method=method,
-                            indexes=str(indexes), 
-                            matplt_3d=pca3d, 
-                            parallel_coord=parallelCoord,
-                            parallel_centroids=parallelCentroids, 
-                            tsne_3d=render_to_string('3d_tsne.html'),
-                            pca_3d=render_to_string('3d_pca.html'),
-                        )
+            dataset_id=datasetId,
+            method=method,
+            indexes=str(indexes),
+            matplt_3d=pca3d,
+            parallel_coord=parallelCoord,
+            parallel_centroids=parallelCentroids,
+            tsne_3d=render_to_string('3d_tsne.html'),
+            pca_3d=render_to_string('3d_pca.html'),
+        )
         result.save()
         return JsonResponse({'status': True})
     except Exception as e:
