@@ -55,7 +55,7 @@ def kmeans(args):
 def exportCsv(datasetDf, labels, clustersNumber):
 
     datasetDf['clusters'] = labels
-    for i in range(0, clustersNumber - 1):
+    for i in range(0, clustersNumber):
         datasetDf[datasetDf['clusters'] == i].to_csv(djangoSettings.STATIC_ROOT + '/clusters/cluster' + str(i+1) + '.csv', index=False)
         
 
