@@ -1,1 +1,13 @@
-https://viereck.ch/latex-to-svg/
+<p>The <a class="reference internal" href="generated/sklearn.cluster.OPTICS.html#sklearn.cluster.OPTICS" title="sklearn.cluster.OPTICS"><code class="xref py py-class docutils literal notranslate"><span class="pre">OPTICS</span></code></a> algorithm shares many similarities with the <a class="reference internal" href="generated/sklearn.cluster.DBSCAN.html#sklearn.cluster.DBSCAN" title="sklearn.cluster.DBSCAN"><code class="xref py py-class docutils literal notranslate"><span class="pre">DBSCAN</span></code></a>
+algorithm, and can be considered a generalization of DBSCAN that relaxes the
+<code class="docutils literal notranslate"><span class="pre">eps</span></code> requirement from a single value to a value range. The key difference
+between DBSCAN and OPTICS is that the OPTICS algorithm builds a <em>reachability</em>
+graph, which assigns each sample both a <code class="docutils literal notranslate"><span class="pre">reachability_</span></code> distance, and a spot
+within the cluster <code class="docutils literal notranslate"><span class="pre">ordering_</span></code> attribute; these two attributes are assigned
+when the model is fitted, and are used to determine cluster membership. If
+OPTICS is run with the default value of <em>inf</em> set for <code class="docutils literal notranslate"><span class="pre">max_eps</span></code>, then DBSCAN
+style cluster extraction can be performed repeatedly in linear time for any
+given <code class="docutils literal notranslate"><span class="pre">eps</span></code> value using the <code class="docutils literal notranslate"><span class="pre">cluster_optics_dbscan</span></code> method. Setting
+<code class="docutils literal notranslate"><span class="pre">max_eps</span></code> to a lower value will result in shorter run times, and can be
+thought of as the maximum neighborhood radius from each point to find other
+potential reachable points.</p>

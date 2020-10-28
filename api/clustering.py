@@ -52,13 +52,6 @@ def kmeans(args):
     return result
 
 
-def exportCsv(datasetDf, labels, clustersNumber):
-
-    datasetDf['clusters'] = labels
-    for i in range(0, clustersNumber):
-        datasetDf[datasetDf['clusters'] == i].to_csv(djangoSettings.STATIC_ROOT + '/clusters/cluster' + str(i+1) + '.csv', index=False)
-        
-
 def hierarchical(args):
     print('==== Hierarchical ====')
 
@@ -236,7 +229,7 @@ def variablesSprendingPlot(model, datasetDf, plotingColumns):
 
 
 def prepareResult(datasetDf, algoResult, model, labels, clustersNumber, samplingPoints):
-    from api.helpers import plotPca3d, parallelCoordinates, displayParallelCoordinatesCentroids, tsne, getPltImage, indexes
+    from api.helpers import plotPca3d, parallelCoordinates, displayParallelCoordinatesCentroids, tsne, centroidsPc, getPltImage, indexes
     samplingPoints = int(samplingPoints) if samplingPoints != '' else None
 
     # 3d PCA plot
@@ -271,6 +264,12 @@ def prepareResult(datasetDf, algoResult, model, labels, clustersNumber, sampling
     # t-SNE plot
     tsne(datasetDf=datasetDf, labels=labels, sample_points=samplingPoints)
 
+    # Centroids Pc
+    plt4 = centroidsPc(datasetDf=datasetDf, labels=labels, sample_points=samplingPoints)
+    visual = '<div class="col-sm-12">' + getPltImage(plt4) + '</div>'
+    centroidsPc = '<div class="row">' + visual + '</div>'
+    
+    
     plt.close("all")
 
     labels = pd.DataFrame(model.labels_)
@@ -286,7 +285,8 @@ def prepareResult(datasetDf, algoResult, model, labels, clustersNumber, sampling
         'visuals': {
             'pca3d': pca3d,
             'parallelCoord': parallelCoord,
-            'parallelCentroids': parallelCentroids
+            'parallelCentroids': parallelCentroids,
+            'centroidsPc': centroidsPc
         },
         # 'data': {
         #     'labeledDataset': labeledDataset.drop(['Constant'], axis=1).to_json(),
@@ -320,3 +320,10 @@ def fancy_dendrogram(*args, **kwargs):
         if max_d:
             plt.axhline(y=max_d, linewidth=7, color='#f00')
     return ddata
+
+
+def exportCsv(datasetDf, labels, clustersNumber):
+    datasetDf['clusters'] = labels
+    for i in range(0, clustersNumber):
+        datasetDf[datasetDf['clusters'] == i].to_csv(djangoSettings.STATIC_ROOT + '/clusters/cluster' + str(i+1) + '.csv', index=False)
+        

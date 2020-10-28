@@ -1,1 +1,17 @@
-https://viereck.ch/latex-to-svg/
+<p>The <a class="reference internal" href="generated/sklearn.cluster.Birch.html#sklearn.cluster.Birch" title="sklearn.cluster.Birch"><code class="xref py py-class docutils literal notranslate"><span class="pre">Birch</span></code></a> builds a tree called the Clustering Feature Tree (CFT)
+for the given data. The data is essentially lossy compressed to a set of
+Clustering Feature nodes (CF Nodes). The CF Nodes have a number of
+subclusters called Clustering Feature subclusters (CF Subclusters)
+and these CF Subclusters located in the non-terminal CF Nodes
+can have CF Nodes as children.</p>
+
+<p>The CF Subclusters hold the necessary information for clustering which prevents
+the need to hold the entire input data in memory. This information includes:</p>
+
+<ul class="simple">
+<li><p>Number of samples in a subcluster.</p></li>
+<li><p>Linear Sum - A n-dimensional vector holding the sum of all samples</p></li>
+<li><p>Squared Sum - Sum of the squared L2 norm of all samples.</p></li>
+<li><p>Centroids - To avoid recalculation linear sum / n_samples.</p></li>
+<li><p>Squared norm of the centroids.</p></li>
+</ul>

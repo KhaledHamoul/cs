@@ -1,1 +1,27 @@
-https://viereck.ch/latex-to-svg/
+<p>The <a class="reference internal"
+        href="generated/sklearn.cluster.MiniBatchKMeans.html#sklearn.cluster.MiniBatchKMeans"
+        title="sklearn.cluster.MiniBatchKMeans"><code class="xref py py-class docutils literal notranslate"><span
+                class="pre">MiniBatchKMeans</span></code></a> is a variant of the <a class="reference internal"
+        href="generated/sklearn.cluster.KMeans.html#sklearn.cluster.KMeans" title="sklearn.cluster.KMeans"><code
+            class="xref py py-class docutils literal notranslate"><span class="pre">KMeans</span></code></a> algorithm
+    which uses mini-batches to reduce the computation time, while still attempting
+    to optimise the same objective function. Mini-batches are subsets of the input
+    data, randomly sampled in each training iteration. These mini-batches
+    drastically reduce the amount of computation required to converge to a local
+    solution. In contrast to other algorithms that reduce the convergence time of
+    k-means, mini-batch k-means produces results that are generally only slightly
+    worse than the standard algorithm.</p>
+
+    <p>The algorithm iterates between two major steps, similar to vanilla k-means.
+In the first step, <span class="math notranslate nohighlight"><mjx-container class="MathJax CtxtMenu_Attached_0" jax="CHTML" role="presentation" tabindex="0" ctxtmenu_counter="10" style="font-size: 113.1%; position: relative;"><mjx-math class="MJX-TEX" aria-hidden="true"><mjx-mi class="mjx-i"><mjx-c class="mjx-c1D44F TEX-I"></mjx-c></mjx-mi></mjx-math><mjx-assistive-mml role="presentation" unselectable="on" display="inline"><math xmlns="http://www.w3.org/1998/Math/MathML"><mi>b</mi></math></mjx-assistive-mml></mjx-container></span> samples are drawn randomly from the dataset, to form
+a mini-batch. These are then assigned to the nearest centroid. In the second
+step, the centroids are updated. In contrast to k-means, this is done on a
+per-sample basis. For each sample in the mini-batch, the assigned centroid
+is updated by taking the streaming average of the sample and all previous
+samples assigned to that centroid. This has the effect of decreasing the
+rate of change for a centroid over time. These steps are performed until
+convergence or a predetermined number of iterations is reached.</p>
+
+<p><a class="reference internal" href="generated/sklearn.cluster.MiniBatchKMeans.html#sklearn.cluster.MiniBatchKMeans" title="sklearn.cluster.MiniBatchKMeans"><code class="xref py py-class docutils literal notranslate"><span class="pre">MiniBatchKMeans</span></code></a> converges faster than <a class="reference internal" href="generated/sklearn.cluster.KMeans.html#sklearn.cluster.KMeans" title="sklearn.cluster.KMeans"><code class="xref py py-class docutils literal notranslate"><span class="pre">KMeans</span></code></a>, but the quality
+of the results is reduced. In practice this difference in quality can be quite
+small, as shown in the example and cited reference.</p>

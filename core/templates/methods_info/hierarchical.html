@@ -1,1 +1,28 @@
-https://viereck.ch/latex-to-svg/
+<p>Hierarchical clustering is a general family of clustering algorithms that
+build nested clusters by merging or splitting them successively. This
+hierarchy of clusters is represented as a tree (or dendrogram). The root of the
+tree is the unique cluster that gathers all the samples, the leaves being the
+clusters with only one sample. See the <a class="reference external" href="https://en.wikipedia.org/wiki/Hierarchical_clustering">Wikipedia page</a> for more details.</p>
+
+<p>The <a class="reference internal" href="generated/sklearn.cluster.AgglomerativeClustering.html#sklearn.cluster.AgglomerativeClustering" title="sklearn.cluster.AgglomerativeClustering"><code class="xref py py-class docutils literal notranslate"><span class="pre">AgglomerativeClustering</span></code></a> object performs a hierarchical clustering
+using a bottom up approach: each observation starts in its own cluster, and
+clusters are successively merged together. The linkage criteria determines the
+metric used for the merge strategy:</p>
+
+<ul class="simple">
+<li><p><strong>Ward</strong> minimizes the sum of squared differences within all clusters. It is a
+variance-minimizing approach and in this sense is similar to the k-means
+objective function but tackled with an agglomerative hierarchical
+approach.</p></li>
+<li><p><strong>Maximum</strong> or <strong>complete linkage</strong> minimizes the maximum distance between
+observations of pairs of clusters.</p></li>
+<li><p><strong>Average linkage</strong> minimizes the average of the distances between all
+observations of pairs of clusters.</p></li>
+<li><p><strong>Single linkage</strong> minimizes the distance between the closest
+observations of pairs of clusters.</p></li>
+</ul>
+
+<p><a class="reference internal" href="generated/sklearn.cluster.AgglomerativeClustering.html#sklearn.cluster.AgglomerativeClustering" title="sklearn.cluster.AgglomerativeClustering"><code class="xref py py-class docutils literal notranslate"><span class="pre">AgglomerativeClustering</span></code></a> can also scale to large number of samples
+when it is used jointly with a connectivity matrix, but is computationally
+expensive when no connectivity constraints are added between samples: it
+considers at each step all the possible merges.</p>
