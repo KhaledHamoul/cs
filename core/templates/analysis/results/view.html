@@ -109,6 +109,10 @@
                                             <a class="nav-link" id="para-centroids-tab" data-target-tab="para-centroids"
                                                 data-toggle="tab" href="#para-centroids">Parallel Centroids</a>
                                         </li>
+                                        <li class="nav-item mr-1">
+                                            <a class="nav-link" id="centroids-pc-tab" data-target-tab="centroids-pc"
+                                                data-toggle="tab" href="#centroids-pc">Centroids Barplots</a>
+                                        </li>
                                     </ul>
                                 </div>
                             </div>
@@ -141,6 +145,12 @@
                                                     {{ result.parallel_centroids | safe }}
                                                 </div>
                                             </div>
+                                            <div class="tab-pane" id="centroids-pc" role="tabpanel">
+                                                <div id="visual-centroids_pc" style="height: 90vh;"
+                                                    data-viewer-set="false">
+                                                    {{ result.centroids_pc | safe }}
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -165,8 +175,7 @@
 
     $('#myTab .nav-link').bind('click', e => {
         let selector = '#' + $(e.target).data('target-tab') + ' > div';
-        if ($(selector) != undefined && $(selector).attr('data-viewer-set') == 'false' && $(selector).html() !=
-            '') {
+        if ($(selector) != undefined && $(selector).attr('data-viewer-set') == 'false' && $(selector).html() != '') {
             $(selector).attr('data-viewer-set', true)
             setImageViewer(selector + ' img')
         }

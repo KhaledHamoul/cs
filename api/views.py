@@ -294,6 +294,7 @@ def save_result(request):
     pca3d = request.POST.get('pca3d')
     parallelCoord = request.POST.get('parallelCoord')
     parallelCentroids = request.POST.get('parallelCentroids')
+    centroidsPc = request.POST.get('centroidsPc')
 
     try:
         result = Result(
@@ -305,6 +306,7 @@ def save_result(request):
             parallel_centroids=parallelCentroids,
             tsne_3d=render_to_string('3d_tsne.html'),
             pca_3d=render_to_string('3d_pca.html'),
+            centroids_pc=centroidsPc,
         )
         result.save()
         return JsonResponse({'status': True})
