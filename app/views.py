@@ -9,6 +9,7 @@ from logging import warning
 from app.models import Dataset, Record, Attribute
 from api.models import Result, ExecutionLog
 from django.db.models import Count
+from django.views.decorators.clickjacking import xframe_options_exempt
 import json
 
 
@@ -33,6 +34,7 @@ def index(request):
 
 
 @login_required(login_url="/login/")
+@xframe_options_exempt
 def pages(request):
     context = {}
     try:
