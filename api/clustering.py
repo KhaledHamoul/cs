@@ -23,6 +23,9 @@ from scipy.cluster import hierarchy
 from scipy.cluster.hierarchy import dendrogram, linkage, inconsistent
 import skimage
 from skimage.transform import rescale
+from django.conf import settings as djangoSettings
+import os
+import zipfile
 
 matplotlib.use('Agg')
 
@@ -44,8 +47,17 @@ def kmeans(args):
     result = prepareResult(datasetDf=datasetDf, algoResult=algoResult, model=model,
                            labels=labels, clustersNumber=clustersNumber, samplingPoints=samplingPoints)
 
+    exportCsv(datasetDf, labels, clustersNumber)
+
     return result
 
+
+def exportCsv(datasetDf, labels, clustersNumber):
+
+    datasetDf['clusters'] = labels
+    for i in range(0, clustersNumber - 1):
+        datasetDf[datasetDf['clusters'] == i].to_csv(djangoSettings.STATIC_ROOT + '/clusters/cluster' + str(i+1) + '.csv', index=False)
+        
 
 def hierarchical(args):
     print('==== Hierarchical ====')
@@ -54,7 +66,8 @@ def hierarchical(args):
     datasetDf = args.get('datasetDf')
     samplingPoints = args.get('samplingPoints')
 
-    model = AgglomerativeClustering(n_clusters=clustersNumber, affinity='euclidean')
+    model = AgglomerativeClustering(
+        n_clusters=clustersNumber, affinity='euclidean')
     algoResult = model.fit(datasetDf)
 
     labels = algoResult.labels_
@@ -126,7 +139,7 @@ def birch(args):
     return result
 
 
-def mean_shift(args):        
+def mean_shift(args):
     print('==== Mean Shift ====')
 
     clustersNumber = int(args.get('clustersNumber'))
@@ -144,7 +157,7 @@ def mean_shift(args):
     return result
 
 
-def dbscan(args):    
+def dbscan(args):
     print('==== DBSCAN ====')
 
     clustersNumber = int(args.get('clustersNumber'))

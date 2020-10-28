@@ -15,6 +15,10 @@ import pandas as pd
 from sklearn.decomposition import PCA
 import time
 from django.template.loader import render_to_string
+from django.conf import settings as djangoSettings
+import os
+import zipfile
+from io import BytesIO
 
 # upload & validate dataset
 
@@ -152,6 +156,27 @@ def clone_dataset(request):
     result['status'] = executionStatus
 
     return JsonResponse(result)
+
+
+@csrf_exempt
+def donwload_clusters_zip(request):
+    path = djangoSettings.STATIC_ROOT + '/clusters'
+    filenames = os.listdir(path) 
+    print(filenames)
+   
+    zip_filename = path + '/c.zip'
+    zip_buffer = BytesIO()
+    with zipfile.ZipFile(zip_buffer, "a", zipfile.ZIP_DEFLATED, False) as zip_file:
+        for file in filenames:
+            f = open(path + '/' + file)
+            zip_file.writestr(file, f.read())
+            f.close()
+    zip_buffer.seek(0)
+
+    resp = HttpResponse(zip_buffer, content_type='application/zip')
+    resp['Content-Disposition'] = 'attachment; filename = %s' % zip_filename
+    return resp
+
 
 # optimum_clusters_number
 
