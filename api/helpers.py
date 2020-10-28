@@ -237,6 +237,19 @@ def tsne(datasetDf, labels, sample_points=None):
     )
     fig.write_html('core/templates/3d_tsne.html', auto_open=False)
 
+def centroidsPc(datasetDf, labels, sample_points=None):
+    df_mean = (datasetDf.groupby('cluster').mean())
+
+    results = pd.DataFrame(columns=['Variable', 'Var'])
+    for column in df_mean.columns[0:]:
+        results.loc[len(results), :] = [column, np.var(df_mean[column])]
+        
+    selected_columns = list(results.sort_values('Var', ascending=False).head(15).Variable.values) + ['cluster']
+    tidy = datasetDf[selected_columns].melt(id_vars='cluster')
+    fig, ax = plt.subplots(figsize=(24, 10))
+    sns.barplot(x='cluster', y='value', hue='variable', ax=ax, data=tidy)
+    
+    return plt
 
 def parallelCoordinates(datasetDf, labels, num_clusters):
     X_clustered = pd.DataFrame(datasetDf)

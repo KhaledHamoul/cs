@@ -8,6 +8,7 @@ class Result(models.Model):
     matplt_3d = models.TextField(default="")
     parallel_coord = models.TextField(default="")
     parallel_centroids = models.TextField(default="")
+    centroids_pc = models.TextField(default="")
     
     pca_3d = models.TextField(default="")
     tsne_3d = models.TextField(default="")

@@ -1,1 +1,24 @@
-https://viereck.ch/latex-to-svg/
+<p>The <a class="reference internal" href="generated/sklearn.cluster.DBSCAN.html#sklearn.cluster.DBSCAN" title="sklearn.cluster.DBSCAN"><code class="xref py py-class docutils literal notranslate"><span class="pre">DBSCAN</span></code></a> algorithm views clusters as areas of high density
+separated by areas of low density. Due to this rather generic view, clusters
+found by DBSCAN can be any shape, as opposed to k-means which assumes that
+clusters are convex shaped. The central component to the DBSCAN is the concept
+of <em>core samples</em>, which are samples that are in areas of high density. A
+cluster is therefore a set of core samples, each close to each other
+(measured by some distance measure)
+and a set of non-core samples that are close to a core sample (but are not
+themselves core samples). There are two parameters to the algorithm,
+<code class="docutils literal notranslate"><span class="pre">min_samples</span></code> and <code class="docutils literal notranslate"><span class="pre">eps</span></code>,
+which define formally what we mean when we say <em>dense</em>.
+Higher <code class="docutils literal notranslate"><span class="pre">min_samples</span></code> or lower <code class="docutils literal notranslate"><span class="pre">eps</span></code>
+indicate higher density necessary to form a cluster.</p>
+
+<p>More formally, we define a core sample as being a sample in the dataset such
+that there exist <code class="docutils literal notranslate"><span class="pre">min_samples</span></code> other samples within a distance of
+<code class="docutils literal notranslate"><span class="pre">eps</span></code>, which are defined as <em>neighbors</em> of the core sample. This tells
+us that the core sample is in a dense area of the vector space. A cluster
+is a set of core samples that can be built by recursively taking a core
+sample, finding all of its neighbors that are core samples, finding all of
+<em>their</em> neighbors that are core samples, and so on. A cluster also has a
+set of non-core samples, which are samples that are neighbors of a core sample
+in the cluster but are not themselves core samples. Intuitively, these samples
+are on the fringes of a cluster.</p>

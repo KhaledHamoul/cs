@@ -198,9 +198,14 @@
                             <div class="card-header">
                                 <h5>Result</h5>
                                 <div class="btn-group float-right ml-2">
+                                    <button class="btn btn-success zip-download-btn" onclick="window.location = '/api/analysis/donwload-clusters-zip'" disabled>
+                                        <i class="fas fa-download mx-0"></i></button>
+                                </div>
+                                <div class="btn-group float-right ml-2">
                                     <button class="btn btn-primary save-btn" disabled><i
                                             class="far fa-save mx-0"></i></button>
                                 </div>
+                                
                                 <div class="btn-group btn-group-toggle float-right" data-toggle="buttons">
                                     <ul class="nav nav-tabs" id="myTab" role="tablist">
                                         <li class="nav-item mr-1">
@@ -223,6 +228,10 @@
                                         <li class="nav-item mr-1">
                                             <a class="nav-link" id="para-centroids-tab" data-target-tab="para-centroids"
                                                 data-toggle="tab" href="#para-centroids">Parallel Centroids</a>
+                                        </li>
+                                        <li class="nav-item mr-1">
+                                            <a class="nav-link" id="centroids-pc-tab" data-target-tab="centroids-pc"
+                                                data-toggle="tab" href="#centroids-pc">Centroids Barplots</a>
                                         </li>
                                     </ul>
                                 </div>
@@ -249,6 +258,10 @@
                                             </div>
                                             <div class="tab-pane" id="para-centroids" role="tabpanel">
                                                 <div id="visual-parallelCentroids" style="height: 90vh;"
+                                                    data-viewer-set="false"></div>
+                                            </div>
+                                            <div class="tab-pane" id="centroids-pc" role="tabpanel">
+                                                <div id="visual-centroidsPc" style="height: 90vh;"
                                                     data-viewer-set="false"></div>
                                             </div>
                                         </div>
@@ -296,6 +309,9 @@
 
                 $('.card-block.exec-block').LoadingOverlay("show")
 
+                $('.save-btn').attr('disabled', 'disabled')
+                $('.zip-download-btn').attr('disabled', 'disabled')
+
                 $.ajax({
                     url: '/api/analysis/clustering',
                     method: 'POST',
@@ -315,6 +331,7 @@
 
                         if (data.status) {
                             $('.save-btn').removeAttr('disabled')
+                            $('.zip-download-btn').removeAttr('disabled')
 
                             // indexes
                             $('#di').html(data.indexes.di)
@@ -390,9 +407,7 @@
             if (op.val() != 'hierarchical') $('[name=linkageMethod]').attr('disabled', 'disabled')
             else $('[name=linkageMethod]').removeAttr('disabled')
         })
-    
-        if (op.val() != 'hierarchical') $('[name=linkageMethod]').attr('disabled', 'disabled')
-        else $('[name=linkageMethod]').removeAttr('disabled')
+
 
         $('#myTab .nav-link').bind('click', e => {
             let selector = '#' + $(e.target).data('target-tab') + ' > div';

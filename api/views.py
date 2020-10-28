@@ -15,6 +15,10 @@ import pandas as pd
 from sklearn.decomposition import PCA
 import time
 from django.template.loader import render_to_string
+from django.conf import settings as djangoSettings
+import os
+import zipfile
+from io import BytesIO
 
 # upload & validate dataset
 
@@ -153,6 +157,25 @@ def clone_dataset(request):
 
     return JsonResponse(result)
 
+
+@csrf_exempt
+def donwload_clusters_zip(request):
+    path = djangoSettings.STATIC_ROOT + '/clusters'
+    filenames = os.listdir(path) 
+
+    zip_buffer = BytesIO()
+    with zipfile.ZipFile(zip_buffer, "a", zipfile.ZIP_DEFLATED, False) as zip_file:
+        for file in filenames:
+            f = open(path + '/' + file)
+            zip_file.writestr(file, f.read())
+            f.close()
+    zip_buffer.seek(0)
+
+    resp = HttpResponse(zip_buffer, content_type='application/zip')
+    resp['Content-Disposition'] = 'attachment; filename = clusters.zip'
+    return resp
+
+
 # optimum_clusters_number
 
 
@@ -271,6 +294,7 @@ def save_result(request):
     pca3d = request.POST.get('pca3d')
     parallelCoord = request.POST.get('parallelCoord')
     parallelCentroids = request.POST.get('parallelCentroids')
+    centroidsPc = request.POST.get('centroidsPc')
 
     try:
         result = Result(
@@ -282,6 +306,7 @@ def save_result(request):
             parallel_centroids=parallelCentroids,
             tsne_3d=render_to_string('3d_tsne.html'),
             pca_3d=render_to_string('3d_pca.html'),
+            centroids_pc=centroidsPc,
         )
         result.save()
         return JsonResponse({'status': True})
